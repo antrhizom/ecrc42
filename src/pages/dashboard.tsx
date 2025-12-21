@@ -289,7 +289,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => router.push('/certificates')}
-            className="card hover:shadow-lg transition-shadow text-left group md:col-span-2"
+            className="card hover:shadow-lg transition-shadow text-left group"
           >
             <Award className="w-16 h-16 text-ecrc-purple mb-4 group-hover:scale-110 transition-transform" />
             <h2 className="text-2xl font-bold mb-2">Zertifikate</h2>
@@ -298,6 +298,20 @@ export default function Dashboard() {
             </p>
             <div className="inline-flex items-center text-ecrc-purple font-semibold">
               Zu den Zertifikaten →
+            </div>
+          </button>
+
+          <button
+            onClick={() => router.push('/license-generator')}
+            className="card hover:shadow-lg transition-shadow text-left group"
+          >
+            <FileCheck className="w-16 h-16 text-orange-500 mb-4 group-hover:scale-110 transition-transform" />
+            <h2 className="text-2xl font-bold mb-2">CC-Lizenz-Generator</h2>
+            <p className="text-gray-600 mb-4">
+              Erstelle eine Creative Commons Lizenz für dein eigenes Werk. Mit Nachweis des Urheberrechtsschutzes und PDF-Zertifikat.
+            </p>
+            <div className="inline-flex items-center text-orange-500 font-semibold">
+              Lizenz erstellen →
             </div>
           </button>
         </div>
