@@ -780,8 +780,9 @@ export default function LicenseGenerator() {
               ))}
             </div>
 
-            <Accordion title="❓ Welche Lizenz soll ich wählen?" className="mt-6">
-              <div className="space-y-3 text-sm">
+            <div className="mt-6">
+              <Accordion title="❓ Welche Lizenz soll ich wählen?">
+                <div className="space-y-3 text-sm">
                 <p><strong>Wenn du möchtest, dass dein Werk maximal genutzt wird:</strong><br/>
                 → CC0 oder CC-BY</p>
                 
@@ -797,7 +798,8 @@ export default function LicenseGenerator() {
                 <p><strong>Wenn du einen "Copyleft"-Effekt möchtest (wie Open Source):</strong><br/>
                 → CC-BY-SA, CC-BY-NC-SA</p>
               </div>
-            </Accordion>
+              </Accordion>
+            </div>
 
             <div className="flex space-x-4 mt-8">
               <button onClick={() => setStep(2)} className="btn-secondary flex-1">
