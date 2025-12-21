@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Access Codes - Lesen erlaubt für authentifizierte Benutzer
+    match /access_codes/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null; // Nutzer können ihren eigenen Code erstellen
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Users - Benutzer können nur ihre eigenen Daten sehen und bearbeiten
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+    
+    // Checked Products - Benutzer können nur ihre eigenen Produkte erstellen und lesen
+    match /checked_products/{productId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Case Examples - Alle authentifizierten Benutzer können lesen und schreiben
+    match /case_examples/{caseId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+                      request.resource.data.authorId == request.auth.uid;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && 
+                      resource.data.authorId == request.auth.uid;
+    }
+  }
+}
