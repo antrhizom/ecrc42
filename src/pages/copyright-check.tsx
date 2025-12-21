@@ -1130,15 +1130,17 @@ export default function CopyrightCheck() {
                       </button>
                     </div>
 
-                    <Accordion title="🎓 Unterrichtsausnahme (Art. 19 URG)" className="mt-4">
-                      <p className="mb-2">Im Unterricht darfst du geschützte Werke nutzen, wenn:</p>
+                    <div className="mt-4">
+                      <Accordion title="🎓 Unterrichtsausnahme (Art. 19 URG)">
+                        <p className="mb-2">Im Unterricht darfst du geschützte Werke nutzen, wenn:</p>
                       <ul className="list-disc pl-5 space-y-1">
                         <li>Es <strong>nur im Klassenzimmer</strong> gezeigt wird</li>
                         <li>Oder auf <strong>geschütztem LMS</strong> (Moodle, OLAT - nur für Klasse)</li>
                         <li>Für <strong>pädagogische Zwecke</strong></li>
                       </ul>
                       <p className="mt-2 font-medium text-red-700">NICHT erlaubt: Auf öffentlicher Schulwebsite posten!</p>
-                    </Accordion>
+                      </Accordion>
+                    </div>
                   </div>
                 )}
 
