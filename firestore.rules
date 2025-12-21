@@ -35,5 +35,13 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
                       resource.data.authorId == request.auth.uid;
     }
+    
+    // Generated Licenses - Benutzer können nur ihre eigenen Lizenzen erstellen und lesen
+    match /generated_licenses/{licenseId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
   }
 }
