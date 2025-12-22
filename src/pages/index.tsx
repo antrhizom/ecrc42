@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { signInAnonymously } from 'firebase/auth'
+import { signInAnonymously, signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
-import { CheckCircle2, UserPlus, LogIn, Copy, Check } from 'lucide-react'
+import { CheckCircle2, UserPlus, LogIn, Copy, Check, ShieldCheck } from 'lucide-react'
 
 // Code-Generator Funktion
 function generateCode(): string {
@@ -18,13 +18,17 @@ function generateCode(): string {
 
 export default function Home() {
   const router = useRouter()
-  const [mode, setMode] = useState<'select' | 'register' | 'login'>('select')
+  const [mode, setMode] = useState<'select' | 'register' | 'login' | 'admin'>('select')
   const [code, setCode] = useState('')
   const [generatedCode, setGeneratedCode] = useState('')
   const [lernname, setLernname] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
+  
+  // Admin Login States
+  const [adminEmail, setAdminEmail] = useState('')
+  const [adminPassword, setAdminPassword] = useState('')
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,6 +128,52 @@ export default function Home() {
     }
   }
 
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      // E-Mail/Passwort Login
+      const userCredential = await signInWithEmailAndPassword(auth, adminEmail, adminPassword)
+      const userId = userCredential.user.uid
+
+      // Prüfe oder erstelle User-Profil
+      const userRef = doc(db, 'users', userId)
+      const userDoc = await getDoc(userRef)
+
+      if (!userDoc.exists()) {
+        // Erstelle Admin-Profil
+        await setDoc(userRef, {
+          lernname: 'Admin',
+          email: adminEmail,
+          createdAt: new Date().toISOString(),
+          isAdmin: true,
+          activity: {
+            checkedProducts: 0,
+            taggedCases: 0,
+            likedCases: 0,
+            generatedLicenses: 0,
+            generatedCertificates: 0
+          }
+        })
+      }
+
+      router.push('/dashboard')
+    } catch (err: any) {
+      console.error('Admin Login Error:', err)
+      if (err.code === 'auth/invalid-credential') {
+        setError('Ungültige E-Mail oder Passwort')
+      } else if (err.code === 'auth/user-not-found') {
+        setError('Admin-Account nicht gefunden')
+      } else {
+        setError('Fehler beim Admin-Login: ' + err.message)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const copyCode = () => {
     navigator.clipboard.writeText(generatedCode)
     setCodeCopied(true)
@@ -178,6 +228,21 @@ export default function Home() {
                     <div>
                       <h3 className="font-bold text-lg">Mit Code anmelden</h3>
                       <p className="text-sm text-gray-600">Ich habe bereits einen Zugangscode</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setMode('admin')}
+                  className="w-full p-6 border-2 border-ecrc-purple rounded-xl hover:bg-purple-50 transition-colors text-left group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-ecrc-purple rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ShieldCheck className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">Admin-Login</h3>
+                      <p className="text-sm text-gray-600">Login mit E-Mail und Passwort</p>
                     </div>
                   </div>
                 </button>
@@ -333,6 +398,76 @@ export default function Home() {
                   {loading ? 'Lädt...' : 'Anmelden'}
                 </button>
               </form>
+            </>
+          )}
+
+          {/* Admin Login Form */}
+          {mode === 'admin' && (
+            <>
+              <button
+                onClick={() => setMode('select')}
+                className="text-gray-600 hover:text-gray-900 mb-4 flex items-center"
+              >
+                ← Zurück
+              </button>
+              
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-10 h-10 text-ecrc-purple" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Admin-Login</h2>
+                <p className="text-gray-600">Login mit E-Mail und Passwort</p>
+              </div>
+              
+              <form onSubmit={handleAdminLogin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    E-Mail
+                  </label>
+                  <input
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    className="input-field"
+                    placeholder="admin@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Passwort
+                  </label>
+                  <input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className="input-field"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full btn-primary disabled:opacity-50"
+                >
+                  {loading ? 'Lädt...' : 'Als Admin anmelden'}
+                </button>
+              </form>
+
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-xs text-gray-500 text-center">
+                  🔒 Sicherer Login für Administratoren
+                </p>
+              </div>
             </>
           )}
         </div>
