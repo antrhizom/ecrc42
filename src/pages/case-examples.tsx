@@ -69,14 +69,15 @@ export default function CaseExamples() {
   const loadUserName = async () => {
     if (!auth.currentUser) return
     
-    // Check email from Firebase Auth
-    const email = auth.currentUser.email || ''
-    setUserEmail(email)
-    setIsAdmin(email === ADMIN_EMAIL)
-    
     const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
     if (userDoc.exists()) {
-      setUserName(userDoc.data().lernname)
+      const data = userDoc.data()
+      setUserName(data.lernname)
+      
+      // Check email from FIRESTORE (not Auth!)
+      const email = data.email || ''
+      setUserEmail(email)
+      setIsAdmin(email === ADMIN_EMAIL)
     }
   }
 
