@@ -51,7 +51,9 @@ export default function Home() {
         activity: {
           checkedProducts: 0,
           taggedCases: 0,
-          likedCases: 0
+          likedCases: 0,
+          generatedLicenses: 0,
+          generatedCertificates: 0
         }
       })
       console.log('✅ Benutzerprofil erstellt')
@@ -94,31 +96,58 @@ export default function Home() {
       }
 
       const codeData = codeDoc.data()
+      const storedUserId = codeData.userId
 
-      // Anonyme Authentifizierung
+      // Anonyme Authentifizierung (neue Session)
       const userCredential = await signInAnonymously(auth)
-      const userId = userCredential.user.uid
+      const newSessionUserId = userCredential.user.uid
 
-      // Lade existierendes Benutzerprofil oder erstelle neues
-      const userRef = doc(db, 'users', userId)
-      const userDoc = await getDoc(userRef)
-
-      if (!userDoc.exists()) {
-        // Erstelle neues Profil mit existierenden Daten
-        await setDoc(userRef, {
-          lernname: codeData.lernname,
-          code: code,
-          createdAt: new Date().toISOString(),
-          activity: {
-            checkedProducts: 0,
-            taggedCases: 0,
-            likedCases: 0
-          }
-        })
+      // Versuche alte User-Daten zu laden
+      let userData: any = {
+        lernname: codeData.lernname || 'User',
+        code: code,
+        createdAt: codeData.createdAt || new Date().toISOString(),
+        activity: {
+          checkedProducts: 0,
+          taggedCases: 0,
+          likedCases: 0,
+          generatedLicenses: 0,
+          generatedCertificates: 0
+        }
       }
+
+      // Versuche existierende Daten zu laden (falls vorhanden)
+      try {
+        const oldUserDoc = await getDoc(doc(db, 'users', storedUserId))
+        if (oldUserDoc.exists()) {
+          const oldData = oldUserDoc.data()
+          userData = {
+            ...oldData,
+            // Stelle sicher dass neue Felder existieren
+            activity: {
+              checkedProducts: oldData.activity?.checkedProducts || 0,
+              taggedCases: oldData.activity?.taggedCases || 0,
+              likedCases: oldData.activity?.likedCases || 0,
+              generatedLicenses: oldData.activity?.generatedLicenses || 0,
+              generatedCertificates: oldData.activity?.generatedCertificates || 0
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Keine alten Daten gefunden, erstelle neue')
+      }
+
+      // Speichere für diese Session
+      await setDoc(doc(db, 'users', newSessionUserId), {
+        ...userData,
+        sessionUserId: newSessionUserId,
+        originalCode: code,
+        lastLogin: new Date().toISOString()
+      })
 
       router.push('/dashboard')
     } catch (err: any) {
+      console.error('Login Error:', err)
       setError('Fehler beim Anmelden: ' + err.message)
     } finally {
       setLoading(false)
