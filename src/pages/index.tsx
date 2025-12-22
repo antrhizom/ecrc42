@@ -96,15 +96,14 @@ export default function Home() {
       }
 
       const codeData = codeDoc.data()
-      const storedUserId = codeData.userId
 
-      // Anonyme Authentifizierung (neue Session)
-      const userCredential = await signInAnonymously(auth)
-      const newSessionUserId = userCredential.user.uid
+      // Anonyme Authentifizierung
+      await signInAnonymously(auth)
 
-      // Versuche alte User-Daten zu laden
-      let userData: any = {
-        lernname: codeData.lernname || 'User',
+      // Erstelle oder aktualisiere User-Profil mit Code-Daten
+      const userId = auth.currentUser!.uid
+      await setDoc(doc(db, 'users', userId), {
+        lernname: codeData.lernname,
         code: code,
         createdAt: codeData.createdAt || new Date().toISOString(),
         activity: {
@@ -114,35 +113,6 @@ export default function Home() {
           generatedLicenses: 0,
           generatedCertificates: 0
         }
-      }
-
-      // Versuche existierende Daten zu laden (falls vorhanden)
-      try {
-        const oldUserDoc = await getDoc(doc(db, 'users', storedUserId))
-        if (oldUserDoc.exists()) {
-          const oldData = oldUserDoc.data()
-          userData = {
-            ...oldData,
-            // Stelle sicher dass neue Felder existieren
-            activity: {
-              checkedProducts: oldData.activity?.checkedProducts || 0,
-              taggedCases: oldData.activity?.taggedCases || 0,
-              likedCases: oldData.activity?.likedCases || 0,
-              generatedLicenses: oldData.activity?.generatedLicenses || 0,
-              generatedCertificates: oldData.activity?.generatedCertificates || 0
-            }
-          }
-        }
-      } catch (err) {
-        console.log('Keine alten Daten gefunden, erstelle neue')
-      }
-
-      // Speichere für diese Session
-      await setDoc(doc(db, 'users', newSessionUserId), {
-        ...userData,
-        sessionUserId: newSessionUserId,
-        originalCode: code,
-        lastLogin: new Date().toISOString()
       })
 
       router.push('/dashboard')
