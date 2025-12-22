@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
-import { CheckCircle2, FileCheck, BookOpen, Award, LogOut, TrendingUp, CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle2, FileCheck, BookOpen, Award, LogOut, TrendingUp } from 'lucide-react'
 
 interface UserData {
   lernname: string
@@ -11,31 +11,18 @@ interface UserData {
     checkedProducts: number
     taggedCases: number
     likedCases: number
+    generatedLicenses: number
+    generatedCertificates: number
   }
-}
-
-interface CheckedProduct {
-  result: {
-    isProtected: boolean
-    color: string
-  }
-  createdAt: string
 }
 
 export default function Dashboard() {
   const router = useRouter()
   const [userData, setUserData] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalChecks: 0,
-    passedChecks: 0,
-    protectedWorks: 0,
-    unprotectedWorks: 0
-  })
 
   useEffect(() => {
     loadUserData()
-    loadStats()
   }, [])
 
   const loadUserData = async () => {
@@ -56,41 +43,6 @@ export default function Dashboard() {
     }
   }
 
-  const loadStats = async () => {
-    if (!auth.currentUser) return
-
-    try {
-      const q = query(
-        collection(db, 'checked_products'),
-        where('userId', '==', auth.currentUser.uid)
-      )
-      const snapshot = await getDocs(q)
-      
-      const totalChecks = snapshot.docs.length
-      let passedChecks = 0
-      let protectedWorks = 0
-      let unprotectedWorks = 0
-
-      snapshot.docs.forEach(doc => {
-        const data = doc.data() as CheckedProduct
-        if (data.result) {
-          if (data.result.color === 'green') passedChecks++
-          if (data.result.isProtected) protectedWorks++
-          else unprotectedWorks++
-        }
-      })
-
-      setStats({
-        totalChecks,
-        passedChecks,
-        protectedWorks,
-        unprotectedWorks
-      })
-    } catch (err) {
-      console.error('Error loading stats:', err)
-    }
-  }
-
   const handleLogout = async () => {
     await signOut(auth)
     router.push('/')
@@ -103,10 +55,6 @@ export default function Dashboard() {
       </div>
     )
   }
-
-  const successRate = stats.totalChecks > 0 
-    ? Math.round((stats.passedChecks / stats.totalChecks) * 100) 
-    : 0
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,14 +93,24 @@ export default function Dashboard() {
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4 flex items-center">
             <TrendingUp className="w-6 h-6 mr-2 text-ecrc-blue" />
-            ECRC Nutzungsstatistik
+            ECRC Nutzer*innen-Statistik
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="card bg-gradient-to-br from-ecrc-blue to-blue-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm opacity-90">Durchgeführte Checks</p>
-                  <p className="text-3xl font-bold">{stats.totalChecks}</p>
+                  <p className="text-sm opacity-90">Urheberrechts-Abklärungen</p>
+                  <p className="text-3xl font-bold">{userData?.activity.checkedProducts || 0}</p>
+                </div>
+                <FileCheck className="w-12 h-12 opacity-30" />
+              </div>
+            </div>
+
+            <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">CC-Abklärungen</p>
+                  <p className="text-3xl font-bold">{userData?.activity.generatedLicenses || 0}</p>
                 </div>
                 <FileCheck className="w-12 h-12 opacity-30" />
               </div>
@@ -161,98 +119,55 @@ export default function Dashboard() {
             <div className="card bg-gradient-to-br from-ecrc-green to-green-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm opacity-90">Alle Kriterien erfüllt</p>
-                  <p className="text-3xl font-bold">{stats.passedChecks}</p>
+                  <p className="text-sm opacity-90">Fallbeispiele aufgeführt</p>
+                  <p className="text-3xl font-bold">{userData?.activity.taggedCases || 0}</p>
                 </div>
-                <CheckCircle className="w-12 h-12 opacity-30" />
+                <BookOpen className="w-12 h-12 opacity-30" />
               </div>
             </div>
 
-            <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <div className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm opacity-90">Geschützte Werke</p>
-                  <p className="text-3xl font-bold">{stats.protectedWorks}</p>
+                  <p className="text-sm opacity-90">Aktivitätsberichte erstellt</p>
+                  <p className="text-3xl font-bold">{userData?.activity.generatedCertificates || 0}</p>
                 </div>
-                <CheckCircle2 className="w-12 h-12 opacity-30" />
-              </div>
-            </div>
-
-            <div className="card bg-gradient-to-br from-gray-500 to-gray-600 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm opacity-90">Nicht geschützt</p>
-                  <p className="text-3xl font-bold">{stats.unprotectedWorks}</p>
-                </div>
-                <XCircle className="w-12 h-12 opacity-30" />
+                <Award className="w-12 h-12 opacity-30" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Erfolgsrate */}
-        {stats.totalChecks > 0 && (
-          <div className="card mb-8">
-            <h3 className="font-bold mb-4">Erfolgsrate (Alle Kriterien erfüllt)</h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <div className="w-full bg-gray-200 rounded-full h-4">
-                  <div 
-                    className={`h-4 rounded-full transition-all ${
-                      successRate >= 80 ? 'bg-green-500' :
-                      successRate >= 50 ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    }`}
-                    style={{ width: `${successRate}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div className="text-2xl font-bold">{successRate}%</div>
+        {/* Gesamtübersicht */}
+        <div className="card mb-8 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-ecrc-blue">
+          <h3 className="font-bold mb-4 text-lg flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2" />
+            Deine Gesamtübersicht
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-3xl font-bold text-ecrc-blue">
+                {(userData?.activity.checkedProducts || 0) + (userData?.activity.generatedLicenses || 0)}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Abklärungen total</p>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
-              {stats.passedChecks} von {stats.totalChecks} Checks haben alle Kriterien erfüllt
-            </p>
-          </div>
-        )}
-
-        {/* Activity Stats */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Deine Aktivitäten</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Geprüfte Produkte</p>
-                  <p className="text-3xl font-bold text-ecrc-blue">
-                    {userData?.activity.checkedProducts || 0}
-                  </p>
-                </div>
-                <FileCheck className="w-12 h-12 text-ecrc-blue opacity-20" />
-              </div>
+            <div>
+              <p className="text-3xl font-bold text-ecrc-green">
+                {userData?.activity.taggedCases || 0}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Fallbeispiele</p>
             </div>
-
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Getaggte Beispiele</p>
-                  <p className="text-3xl font-bold text-ecrc-green">
-                    {userData?.activity.taggedCases || 0}
-                  </p>
-                </div>
-                <BookOpen className="w-12 h-12 text-ecrc-green opacity-20" />
-              </div>
+            <div>
+              <p className="text-3xl font-bold text-orange-500">
+                {userData?.activity.generatedCertificates || 0}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Zertifikate</p>
             </div>
-
-            <div className="card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Gelikte Beispiele</p>
-                  <p className="text-3xl font-bold text-ecrc-purple">
-                    {userData?.activity.likedCases || 0}
-                  </p>
-                </div>
-                <Award className="w-12 h-12 text-ecrc-purple opacity-20" />
-              </div>
+            <div>
+              <p className="text-3xl font-bold text-purple-600">
+                {userData?.activity.likedCases || 0}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">Reaktionen gegeben</p>
             </div>
           </div>
         </div>
