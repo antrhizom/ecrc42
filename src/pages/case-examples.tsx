@@ -18,7 +18,15 @@ interface CaseExample {
   reactions: Record<string, string[]> // emoji -> userIds
   tags: string[]
   userTags: Record<string, string[]> // userId -> tags
+  adminComment?: {
+    text: string
+    createdAt: string
+    adminEmail: string
+  }
 }
+
+const ADMIN_EMAIL = 'antrhizom@gmail.com'
+const WEBHOOK_URL = 'https://hook.eu1.make.com/qns3nawscenfjj1y2k2k82muln7r80wb'
 
 export default function CaseExamples() {
   const router = useRouter()
@@ -28,6 +36,10 @@ export default function CaseExamples() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminCommentText, setAdminCommentText] = useState('')
+  const [selectedCaseForComment, setSelectedCaseForComment] = useState<string | null>(null)
 
   useEffect(() => {
     if (!auth.currentUser) {
@@ -56,6 +68,12 @@ export default function CaseExamples() {
 
   const loadUserName = async () => {
     if (!auth.currentUser) return
+    
+    // Check email from Firebase Auth
+    const email = auth.currentUser.email || ''
+    setUserEmail(email)
+    setIsAdmin(email === ADMIN_EMAIL)
+    
     const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
     if (userDoc.exists()) {
       setUserName(userDoc.data().lernname)
@@ -167,6 +185,27 @@ export default function CaseExamples() {
       }
     } catch (err) {
       console.error('Error updating tag:', err)
+    }
+  }
+
+  const handleAddAdminComment = async (caseId: string) => {
+    if (!isAdmin || !adminCommentText.trim()) return
+
+    try {
+      await updateDoc(doc(db, 'case_examples', caseId), {
+        adminComment: {
+          text: adminCommentText,
+          createdAt: new Date().toISOString(),
+          adminEmail: userEmail
+        }
+      })
+
+      setAdminCommentText('')
+      setSelectedCaseForComment(null)
+      alert('✅ Admin-Kommentar hinzugefügt!')
+    } catch (err) {
+      console.error('Error adding admin comment:', err)
+      alert('❌ Fehler beim Hinzufügen des Kommentars')
     }
   }
 
@@ -329,6 +368,77 @@ export default function CaseExamples() {
                     )
                   })}
                 </div>
+
+                {/* Admin Comment Section */}
+                {caseEx.adminComment && (
+                  <div className="mt-4 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                    <div className="flex items-start">
+                      <span className="text-2xl mr-3">👨‍💼</span>
+                      <div className="flex-1">
+                        <p className="font-bold text-yellow-900 mb-1">Admin-Kommentar:</p>
+                        <div 
+                          className="text-sm text-yellow-800"
+                          dangerouslySetInnerHTML={{ 
+                            __html: caseEx.adminComment.text.replace(
+                              /\[([^\]]+)\]\(([^)]+)\)/g, 
+                              '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>'
+                            )
+                          }}
+                        />
+                        <p className="text-xs text-yellow-700 mt-2">
+                          {new Date(caseEx.adminComment.createdAt).toLocaleDateString('de-CH')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Admin: Add Comment */}
+                {isAdmin && !caseEx.adminComment && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    {selectedCaseForComment === caseEx.id ? (
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium">
+                          Admin-Kommentar hinzufügen:
+                        </label>
+                        <textarea
+                          value={adminCommentText}
+                          onChange={(e) => setAdminCommentText(e.target.value)}
+                          className="input-field"
+                          rows={3}
+                          placeholder="Kommentar... (Links: [Text](URL))"
+                        />
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleAddAdminComment(caseEx.id)}
+                            className="btn-primary text-sm"
+                          >
+                            Speichern
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedCaseForComment(null)
+                              setAdminCommentText('')
+                            }}
+                            className="btn-secondary text-sm"
+                          >
+                            Abbrechen
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          💡 Tipp: Links im Format [Linktext](https://url.com) eingeben
+                        </p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setSelectedCaseForComment(caseEx.id)}
+                        className="text-sm text-gray-600 hover:text-gray-900 font-medium"
+                      >
+                        + Admin-Kommentar hinzufügen
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -368,7 +478,7 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
     setSaving(true)
 
     try {
-      await addDoc(collection(db, 'case_examples'), {
+      const docRef = await addDoc(collection(db, 'case_examples'), {
         title,
         description,
         category,
@@ -378,6 +488,34 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
         reactions: {},
         tags: [],
         userTags: {}
+      })
+
+      // Send webhook to Make.com for admin notification
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title,
+            description,
+            category,
+            author: userName,
+            tags: [],
+            url: `${window.location.origin}/case-examples`,
+            caseId: docRef.id,
+            createdAt: new Date().toISOString()
+          })
+        })
+      } catch (webhookErr) {
+        console.error('Webhook error (non-critical):', webhookErr)
+        // Don't fail the whole operation if webhook fails
+      }
+
+      // Update user activity
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+        'activity.taggedCases': increment(1)
       })
 
       alert('Fallbeispiel erfolgreich hinzugefügt!')
@@ -418,7 +556,8 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
                 required
               >
                 <option value="">Wähle eine Kategorie...</option>
-                <option value="Bildnutzung">Bildnutzung</option>
+                <option value="📷 Foto-Nutzung">📷 Foto-Nutzung</option>
+                <option value="🎨 Bild/Grafik-Nutzung">🎨 Bild/Grafik-Nutzung</option>
                 <option value="Musiknutzung">Musiknutzung</option>
                 <option value="Videonutzung">Videonutzung</option>
                 <option value="Textnutzung">Textnutzung</option>
@@ -427,6 +566,19 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
                 <option value="Sonstiges">Sonstiges</option>
               </select>
             </div>
+
+            {(category === '📷 Foto-Nutzung' || category === '🎨 Bild/Grafik-Nutzung') && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p className="text-sm text-blue-900 font-medium mb-2">
+                  {category === '📷 Foto-Nutzung' ? '📷 Foto:' : '🎨 Bild/Grafik:'}
+                </p>
+                <p className="text-xs text-blue-800">
+                  {category === '📷 Foto-Nutzung' 
+                    ? 'Fotos sind in der Schweiz grundsätzlich IMMER geschützt (50 Jahre ab Herstellung, Art. 29 Abs. 2 lit. c URG).'
+                    : 'Bilder/Grafiken sind nur geschützt, wenn sie individuellen Charakter haben (70 Jahre nach Tod, Art. 2 URG).'}
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-2">Beschreibung</label>

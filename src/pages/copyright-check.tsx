@@ -37,7 +37,8 @@ const InfoBox = ({ children }: { children: React.ReactNode }) => (
 )
 
 const MEDIA_TYPES = [
-  '📷 Bild/Foto',
+  '📷 Foto',
+  '🎨 Bild/Grafik',
   '🎵 Musik/Audio', 
   '🎬 Video',
   '📝 Text',
@@ -721,6 +722,38 @@ export default function CopyrightCheck() {
                     placeholder="z.B. 'Foto eines Sonnenuntergangs von Maria Schmidt auf Instagram'"
                   />
                 </div>
+
+                {(mediaType === '📷 Foto' || mediaType === '🎨 Bild/Grafik') && (
+                  <div className="mb-6">
+                    <Accordion title="📷 Wichtig: Unterschied Foto vs. Bild/Grafik">
+                      <div className="space-y-3">
+                        <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                          <strong className="text-blue-900">📷 Foto:</strong>
+                          <p className="text-sm text-blue-800 mt-1">
+                            Fotos sind in der Schweiz <strong>grundsätzlich IMMER geschützt!</strong> (Art. 29 Abs. 2 lit. c URG)
+                          </p>
+                          <ul className="list-disc pl-5 text-sm text-blue-800 mt-2">
+                            <li>Schutzfrist: <strong>50 Jahre</strong> ab Herstellung</li>
+                            <li>KEIN individueller Charakter erforderlich</li>
+                            <li>Auch einfache Schnappschüsse sind geschützt</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-500">
+                          <strong className="text-purple-900">🎨 Bild/Grafik:</strong>
+                          <p className="text-sm text-purple-800 mt-1">
+                            Gezeichnete Bilder und Grafiken sind nur geschützt, wenn sie individuellen Charakter haben.
+                          </p>
+                          <ul className="list-disc pl-5 text-sm text-purple-800 mt-2">
+                            <li>Schutzfrist: <strong>70 Jahre</strong> nach Tod des Urhebers</li>
+                            <li>Individueller Charakter ERFORDERLICH (Art. 2 URG)</li>
+                            <li>Einfache Strichzeichnungen oft NICHT geschützt</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </Accordion>
+                  </div>
+                )}
 
                 <InfoBox>
                   <strong>Tipp:</strong> Notiere dir bereits jetzt Autor, Titel und Quelle für die spätere Quellenangabe!

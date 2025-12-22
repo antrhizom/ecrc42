@@ -28,12 +28,12 @@ const Accordion = ({ title, children, defaultOpen = false }: { title: string, ch
 }
 
 const MEDIA_TYPES = [
-  '📷 Bild/Foto',
-  '🎵 Musik/Audio',
+  '📷 Foto',
+  '🎨 Bild/Grafik',
+  '🎵 Musik/Audio', 
   '🎬 Video',
   '📝 Text/Dokument',
   '💻 Software/Code',
-  '🎨 Grafik/Design',
   '📚 Buch/E-Book',
   '🎭 Kunstwerk',
   '📊 Präsentation',
@@ -460,6 +460,40 @@ export default function LicenseGenerator() {
                     className="input-field"
                     placeholder="z.B. 'Skulptur', 'Installation'..."
                   />
+                </div>
+              )}
+
+              {(mediaType === '📷 Foto' || mediaType === '🎨 Bild/Grafik') && (
+                <div>
+                  <Accordion title="📷 Wichtig: Unterschied Foto vs. Bild/Grafik">
+                    <div className="space-y-3">
+                      <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                        <strong className="text-blue-900">📷 Foto:</strong>
+                        <p className="text-sm text-blue-800 mt-1">
+                          Fotos sind in der Schweiz <strong>grundsätzlich IMMER geschützt!</strong> (Art. 29 Abs. 2 lit. c URG)
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-blue-800 mt-2">
+                          <li>Schutzfrist: <strong>50 Jahre</strong> ab Herstellung</li>
+                          <li>KEIN individueller Charakter erforderlich</li>
+                          <li>Auch einfache Schnappschüsse sind geschützt</li>
+                          <li>Du kannst eine CC-Lizenz vergeben, da du automatisch Urheber bist</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-500">
+                        <strong className="text-purple-900">🎨 Bild/Grafik:</strong>
+                        <p className="text-sm text-purple-800 mt-1">
+                          Gezeichnete Bilder und Grafiken sind nur geschützt, wenn sie individuellen Charakter haben.
+                        </p>
+                        <ul className="list-disc pl-5 text-sm text-purple-800 mt-2">
+                          <li>Schutzfrist: <strong>70 Jahre</strong> nach deinem Tod</li>
+                          <li>Individueller Charakter ERFORDERLICH (Art. 2 URG)</li>
+                          <li>Einfache Strichzeichnungen oft NICHT geschützt</li>
+                          <li>Prüfe in Schritt 2, ob dein Werk die Kriterien erfüllt</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </Accordion>
                 </div>
               )}
 
