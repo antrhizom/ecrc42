@@ -84,6 +84,8 @@ export default function CopyrightCheck() {
   const [mediaType, setMediaType] = useState('')
   const [sourceType, setSourceType] = useState('')
   const [description, setDescription] = useState('')
+  const [isAICreated, setIsAICreated] = useState<boolean | null>(null)
+  const [hasHumanCreativity, setHasHumanCreativity] = useState<boolean | null>(null)
   
   // Phase 2 Data
   const [isPublicDomain, setIsPublicDomain] = useState<boolean | null>(null)
@@ -632,12 +634,12 @@ export default function CopyrightCheck() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Fortschritt</span>
-                <span className="text-sm text-gray-600">Schritt {step} von 7</span>
+                <span className="text-sm text-gray-600">Schritt {step} von 8</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
                   className="bg-ecrc-blue h-2 rounded-full transition-all"
-                  style={{ width: `${(step / 7) * 100}%` }}
+                  style={{ width: `${(step / 8) * 100}%` }}
                 ></div>
               </div>
             </div>
@@ -687,10 +689,157 @@ export default function CopyrightCheck() {
               </div>
             )}
 
-            {/* Step 2: Source */}
+            {/* Step 2: AI Check */}
             {step === 2 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 2: Woher stammt das Werk?</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 2: Wurde das Werk mit KI erstellt?</h2>
+                
+                <p className="text-gray-600 mb-6">
+                  KI-generierte Werke sind rechtlich anders zu bewerten. Prüfe, ob das Werk mit KI erstellt wurde:
+                </p>
+
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={() => setIsAICreated(false)}
+                    className={`w-full p-6 border-2 rounded-lg text-left transition-all ${
+                      isAICreated === false
+                        ? 'border-ecrc-blue bg-blue-50'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-3xl mr-3">👤</span>
+                      <span className="text-xl font-bold">Nein, rein menschlich erstellt</span>
+                    </div>
+                    <p className="text-sm text-gray-600 ml-12">
+                      Das Werk wurde ohne KI-Unterstützung von einem Menschen geschaffen
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={() => setIsAICreated(true)}
+                    className={`w-full p-6 border-2 rounded-lg text-left transition-all ${
+                      isAICreated === true
+                        ? 'border-ecrc-purple bg-purple-50'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center mb-2">
+                      <span className="text-3xl mr-3">🤖</span>
+                      <span className="text-xl font-bold">Ja, mit KI-Unterstützung</span>
+                    </div>
+                    <p className="text-sm text-gray-600 ml-12">
+                      Das Werk wurde ganz oder teilweise mit KI (ChatGPT, Midjourney, etc.) erstellt
+                    </p>
+                  </button>
+                </div>
+
+                {isAICreated === true && (
+                  <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
+                    <h3 className="font-bold text-orange-900 mb-3">⚠️ Wichtig: Menschliche Schöpfungshöhe prüfen!</h3>
+                    
+                    <p className="text-sm text-orange-800 mb-4">
+                      Für Urheberrechtsschutz muss ein <strong>Mensch</strong> eine <strong>geistige Schöpfung</strong> 
+                      mit <strong>individuellem Charakter</strong> geschaffen haben. Reine KI-Outputs sind NICHT geschützt!
+                    </p>
+
+                    <p className="text-sm font-medium text-orange-900 mb-3">
+                      Hat der Mensch kreative Entscheidungen getroffen?
+                    </p>
+
+                    <div className="space-y-2 mb-4">
+                      <button
+                        onClick={() => setHasHumanCreativity(true)}
+                        className={`w-full p-4 border-2 rounded-lg text-left ${
+                          hasHumanCreativity === true
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <span className="text-2xl mr-3">✅</span>
+                          <div>
+                            <span className="font-bold text-sm">Ja, eindeutig menschliche Kreativität</span>
+                            <p className="text-xs text-gray-600 mt-1">
+                              z.B. detaillierte Prompts, Auswahl, Bearbeitung, Komposition
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => setHasHumanCreativity(false)}
+                        className={`w-full p-4 border-2 rounded-lg text-left ${
+                          hasHumanCreativity === false
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <span className="text-2xl mr-3">❌</span>
+                          <div>
+                            <span className="font-bold text-sm">Nein, reiner KI-Output</span>
+                            <p className="text-xs text-gray-600 mt-1">
+                              z.B. nur einfacher Prompt, keine Nachbearbeitung
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+
+                    <Accordion title="🤖 Was bedeutet das rechtlich?">
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <p className="font-bold text-gray-900 mb-1">✅ MIT menschlicher Schöpfungshöhe:</p>
+                          <ul className="list-disc pl-5 text-gray-700">
+                            <li>Detaillierte, kreative Prompts</li>
+                            <li>Auswahl aus vielen KI-Outputs</li>
+                            <li>Manuelle Nachbearbeitung</li>
+                            <li>Komposition mehrerer Elemente</li>
+                          </ul>
+                          <p className="mt-2 text-green-700">→ Kann urheberrechtlich geschützt sein</p>
+                        </div>
+
+                        <div>
+                          <p className="font-bold text-gray-900 mb-1">❌ OHNE menschliche Schöpfungshöhe:</p>
+                          <ul className="list-disc pl-5 text-gray-700">
+                            <li>Einfacher Prompt: "Erstelle ein Bild von..."</li>
+                            <li>KI macht alles automatisch</li>
+                            <li>Keine Auswahl oder Bearbeitung</li>
+                            <li>Reiner Button-Klick</li>
+                          </ul>
+                          <p className="mt-2 text-red-700">→ KEIN Urheberrechtsschutz!</p>
+                        </div>
+
+                        <p className="text-gray-700 mt-3 pt-3 border-t border-gray-300">
+                          <strong>Rechtslage:</strong> Nach Art. 2 URG muss eine <em>geistige Schöpfung</em> mit 
+                          <em>individuellem Charakter</em> vorliegen. Die KI selbst kann keine Schöpfung sein - 
+                          nur der Mensch kann Urheber sein!
+                        </p>
+                      </div>
+                    </Accordion>
+                  </div>
+                )}
+
+                <div className="flex space-x-4 mt-6">
+                  <button onClick={() => setStep(1)} className="btn-secondary flex-1">
+                    Zurück
+                  </button>
+                  <button
+                    onClick={() => setStep(4)}
+                    disabled={isAICreated === null || (isAICreated === true && hasHumanCreativity === null)}
+                    className="btn-primary flex-1 disabled:opacity-50"
+                  >
+                    Weiter
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Source */}
+            {step === 4 && (
+              <div className="card">
+                <h2 className="text-2xl font-bold mb-6">Schritt 3: Woher stammt das Werk?</h2>
                 
                 <p className="text-gray-600 mb-4">Wähle die Quelle:</p>
                 
@@ -737,6 +886,13 @@ export default function CopyrightCheck() {
                             <li>KEIN individueller Charakter erforderlich</li>
                             <li>Auch einfache Schnappschüsse sind geschützt</li>
                           </ul>
+                          <div className="mt-3 pt-3 border-t border-blue-300">
+                            <p className="text-sm text-blue-900 font-medium">⏰ Nach 50 Jahren:</p>
+                            <p className="text-sm text-blue-800 mt-1">
+                              Fotos werden nach 50 Jahren <strong>gemeinfrei</strong> - auch wenn sie individuellen Charakter 
+                              oder geistige Schöpfung aufweisen! Ein Foto von 1970 ist seit 2020 gemeinfrei.
+                            </p>
+                          </div>
                         </div>
                         
                         <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-500">
@@ -764,7 +920,7 @@ export default function CopyrightCheck() {
                     Zurück
                   </button>
                   <button
-                    onClick={() => setStep(3)}
+                    onClick={() => setStep(4)}
                     disabled={!sourceType}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
@@ -775,9 +931,9 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 3: Public Domain Check */}
-            {step === 3 && (
+            {step === 4 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 3: Ist das Werk gemeinfrei?</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 4: Ist das Werk gemeinfrei?</h2>
                 
                 <Accordion title="❓ Was bedeutet 'gemeinfrei'?" defaultOpen={true}>
                   <p className="mb-2">Ein Werk ist <strong>gemeinfrei (Public Domain)</strong>, wenn:</p>
@@ -795,7 +951,7 @@ export default function CopyrightCheck() {
                     <button
                       onClick={() => {
                         setIsPublicDomain(true)
-                        setStep(6) // Skip to usage type
+                        setStep(7) // Skip to usage type
                       }}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         isPublicDomain === true
@@ -809,7 +965,7 @@ export default function CopyrightCheck() {
                     <button
                       onClick={() => {
                         setIsPublicDomain(false)
-                        setStep(4)
+                        setStep(5)
                       }}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         isPublicDomain === false
@@ -841,9 +997,9 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 4: CC License Check */}
-            {step === 4 && (
+            {step === 5 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 4: Hat das Werk eine Creative Commons Lizenz?</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 5: Hat das Werk eine Creative Commons Lizenz?</h2>
                 
                 <Accordion title="❓ Was ist Creative Commons?" defaultOpen={true}>
                   <p className="mb-2"><strong>Creative Commons (CC)</strong> sind standardisierte Lizenzen, die Urheber nutzen, um ihre Werke unter bestimmten Bedingungen freizugeben.</p>
@@ -861,7 +1017,7 @@ export default function CopyrightCheck() {
                     <button
                       onClick={() => {
                         setHasCCLicense(true)
-                        setStep(5)
+                        setStep(6)
                       }}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         hasCCLicense === true
@@ -876,7 +1032,7 @@ export default function CopyrightCheck() {
                       onClick={() => {
                         setHasCCLicense(false)
                         setIsProtected(true) // Assume protected
-                        setStep(6)
+                        setStep(7)
                       }}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         hasCCLicense === false
@@ -902,7 +1058,7 @@ export default function CopyrightCheck() {
                 </Accordion>
 
                 <div className="flex space-x-4 mt-6">
-                  <button onClick={() => setStep(3)} className="btn-secondary flex-1">
+                  <button onClick={() => setStep(4)} className="btn-secondary flex-1">
                     Zurück
                   </button>
                 </div>
@@ -910,9 +1066,9 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 5: CC License Type */}
-            {step === 5 && hasCCLicense === true && (
+            {step === 6 && hasCCLicense === true && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 5: Welche CC-Lizenz?</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 6: Welche CC-Lizenz?</h2>
                 
                 <p className="text-gray-600 mb-4">Wähle die CC-Lizenz des Werks:</p>
                 
@@ -968,11 +1124,11 @@ export default function CopyrightCheck() {
                 </Accordion>
 
                 <div className="flex space-x-4 mt-6">
-                  <button onClick={() => setStep(4)} className="btn-secondary flex-1">
+                  <button onClick={() => setStep(5)} className="btn-secondary flex-1">
                     Zurück
                   </button>
                   <button
-                    onClick={() => setStep(6)}
+                    onClick={() => setStep(7)}
                     disabled={!ccLicense}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
@@ -983,9 +1139,9 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 6: Usage Type */}
-            {step === 6 && (
+            {step === 7 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 6: Wofür möchtest du es nutzen?</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 7: Wofür möchtest du es nutzen?</h2>
                 
                 <p className="text-gray-600 mb-4">Wähle deine geplante Nutzung:</p>
                 
@@ -1014,7 +1170,7 @@ export default function CopyrightCheck() {
                     Zurück
                   </button>
                   <button
-                    onClick={() => setStep(7)}
+                    onClick={() => setStep(8)}
                     disabled={!usageType}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
@@ -1025,9 +1181,9 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 7: Context Questions */}
-            {step === 7 && (
+            {step === 8 && (
               <div className="card">
-                <h2 className="text-2xl font-bold mb-6">Schritt 7: Zusatzfragen</h2>
+                <h2 className="text-2xl font-bold mb-6">Schritt 8: Zusatzfragen</h2>
                 
                 {/* Commercial use check for all types */}
                 {!isPublicDomain && (
@@ -1234,7 +1390,7 @@ export default function CopyrightCheck() {
                 )}
 
                 <div className="flex space-x-4 mt-6">
-                  <button onClick={() => setStep(6)} className="btn-secondary flex-1">
+                  <button onClick={() => setStep(7)} className="btn-secondary flex-1">
                     Zurück
                   </button>
                   <button
@@ -1283,7 +1439,7 @@ export default function CopyrightCheck() {
                   </div>
 
                   <div className="flex space-x-4 mt-8">
-                    <button onClick={() => setStep(7)} className="btn-secondary flex-1">
+                    <button onClick={() => setStep(8)} className="btn-secondary flex-1">
                       Zurück zur Prüfung
                     </button>
                     <button

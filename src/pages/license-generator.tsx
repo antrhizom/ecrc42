@@ -478,6 +478,13 @@ export default function LicenseGenerator() {
                           <li>Auch einfache Schnappschüsse sind geschützt</li>
                           <li>Du kannst eine CC-Lizenz vergeben, da du automatisch Urheber bist</li>
                         </ul>
+                        <div className="mt-3 pt-3 border-t border-blue-300">
+                          <p className="text-sm text-blue-900 font-medium">⏰ Nach 50 Jahren:</p>
+                          <p className="text-sm text-blue-800 mt-1">
+                            Dein Foto wird nach 50 Jahren <strong>gemeinfrei</strong> - auch wenn es individuellen Charakter 
+                            oder geistige Schöpfung aufweist. Eine CC-Lizenz kann dies nicht verhindern.
+                          </p>
+                        </div>
                       </div>
                       
                       <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-500">
