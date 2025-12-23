@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
-import { signInAnonymously, signInWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import { CheckCircle2, UserPlus, LogIn, Copy, Check, ShieldCheck } from 'lucide-react'
@@ -42,10 +42,14 @@ export default function Home() {
       const newCode = generateCode()
       console.log('✅ Code generiert:', newCode)
 
-      // Anonyme Authentifizierung
-      const userCredential = await signInAnonymously(auth)
+      // Konvertiere Code zu E-Mail und Passwort
+      const email = `${newCode}@ecrc42.internal`
+      const password = newCode
+
+      // E-Mail/Passwort Authentifizierung (statt Anonymous!)
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const userId = userCredential.user.uid
-      console.log('✅ Anonym angemeldet, User ID:', userId)
+      console.log('✅ User erstellt mit fester UID:', userId)
 
       // Erstelle Benutzerprofil
       await setDoc(doc(db, 'users', userId), {
@@ -89,7 +93,7 @@ export default function Home() {
     setLoading(true)
 
     try {
-      // Prüfe ob Code existiert
+      // Prüfe ob Code existiert in Firestore
       const codeRef = doc(db, 'access_codes', code)
       const codeDoc = await getDoc(codeRef)
 
@@ -101,28 +105,42 @@ export default function Home() {
 
       const codeData = codeDoc.data()
 
-      // Anonyme Authentifizierung
-      await signInAnonymously(auth)
+      // Konvertiere Code zu E-Mail und Passwort
+      const email = `${code}@ecrc42.internal`
+      const password = code
 
-      // Erstelle oder aktualisiere User-Profil mit Code-Daten
+      // E-Mail/Passwort Login (statt Anonymous!)
+      await signInWithEmailAndPassword(auth, email, password)
+      console.log('✅ Login erfolgreich mit fester UID!')
+
+      // User-Profil sollte bereits existieren, aber sicherstellen
       const userId = auth.currentUser!.uid
-      await setDoc(doc(db, 'users', userId), {
-        lernname: codeData.lernname,
-        code: code,
-        createdAt: codeData.createdAt || new Date().toISOString(),
-        activity: {
-          checkedProducts: 0,
-          taggedCases: 0,
-          likedCases: 0,
-          generatedLicenses: 0,
-          generatedCertificates: 0
-        }
-      })
+      const userDoc = await getDoc(doc(db, 'users', userId))
+      
+      if (!userDoc.exists()) {
+        // Falls nicht vorhanden, erstelle Profil (sollte normalerweise nicht passieren)
+        await setDoc(doc(db, 'users', userId), {
+          lernname: codeData.lernname,
+          code: code,
+          createdAt: codeData.createdAt || new Date().toISOString(),
+          activity: {
+            checkedProducts: 0,
+            taggedCases: 0,
+            likedCases: 0,
+            generatedLicenses: 0,
+            generatedCertificates: 0
+          }
+        })
+      }
 
       router.push('/dashboard')
     } catch (err: any) {
       console.error('Login Error:', err)
-      setError('Fehler beim Anmelden: ' + err.message)
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        setError('Ungültiger Zugangscode')
+      } else {
+        setError('Fehler beim Anmelden: ' + err.message)
+      }
     } finally {
       setLoading(false)
     }
