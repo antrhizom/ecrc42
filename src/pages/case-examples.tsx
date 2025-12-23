@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { auth, db } from '@/lib/firebase'
-import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore'
-import { ArrowLeft, Plus, ThumbsUp, Search, Filter } from 'lucide-react'
+import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore'
+import { ArrowLeft, Plus, ThumbsUp, Search, Filter, Edit2, Trash2 } from 'lucide-react'
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎯', '💡', '⭐', '🔥']
 const TAG_OPTIONS = ['#nützlich', '#relevant', '#wichtig', '#komplex', '#einfach', '#kreativ']
@@ -33,6 +33,8 @@ export default function CaseExamples() {
   const [cases, setCases] = useState<CaseExample[]>([])
   const [filteredCases, setFilteredCases] = useState<CaseExample[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingCase, setEditingCase] = useState<CaseExample | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [userName, setUserName] = useState('')
@@ -210,6 +212,25 @@ export default function CaseExamples() {
     }
   }
 
+  const handleDeleteCase = async (caseId: string) => {
+    if (!auth.currentUser) return
+    
+    if (!confirm('Möchtest du dieses Fallbeispiel wirklich löschen?')) return
+
+    try {
+      await deleteDoc(doc(db, 'case_examples', caseId))
+      console.log('Case deleted successfully')
+    } catch (err) {
+      console.error('Error deleting case:', err)
+      alert('❌ Fehler beim Löschen des Fallbeispiels')
+    }
+  }
+
+  const handleEditCase = (caseEx: CaseExample) => {
+    setEditingCase(caseEx)
+    setShowEditModal(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -305,11 +326,32 @@ export default function CaseExamples() {
                       <span>Von {caseEx.authorName}</span>
                     </div>
                   </div>
-                  {engagementScore > 10 && (
-                    <div className="ml-4 flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full flex-shrink-0">
-                      <span className="text-2xl">🏆</span>
-                    </div>
-                  )}
+                  <div className="ml-4 flex items-center space-x-2 flex-shrink-0">
+                    {/* Edit/Delete Buttons für eigene Fallbeispiele */}
+                    {auth.currentUser && caseEx.authorId === auth.currentUser.uid && (
+                      <>
+                        <button
+                          onClick={() => handleEditCase(caseEx)}
+                          className="p-2 text-gray-600 hover:text-ecrc-blue hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Bearbeiten"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCase(caseEx.id)}
+                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Löschen"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+                    {engagementScore > 10 && (
+                      <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <span className="text-2xl">🏆</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Tags */}
@@ -461,6 +503,17 @@ export default function CaseExamples() {
         <AddCaseModal
           userName={userName}
           onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      {/* Edit Case Modal */}
+      {showEditModal && editingCase && (
+        <EditCaseModal
+          caseData={editingCase}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditingCase(null)
+          }}
         />
       )}
     </div>
@@ -618,3 +671,123 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
     </div>
   )
 }
+
+
+function EditCaseModal({ caseData, onClose }: { caseData: CaseExample, onClose: () => void }) {
+  const [title, setTitle] = useState(caseData.title)
+  const [description, setDescription] = useState(caseData.description)
+  const [category, setCategory] = useState(caseData.category)
+  const [saving, setSaving] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!auth.currentUser) return
+    setSaving(true)
+
+    try {
+      await updateDoc(doc(db, "case_examples", caseData.id), {
+        title,
+        description,
+        category
+      })
+
+      alert("✅ Fallbeispiel erfolgreich aktualisiert!")
+      onClose()
+    } catch (err) {
+      console.error("Error updating case:", err)
+      alert("❌ Fehler beim Aktualisieren")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-6">Fallbeispiel bearbeiten</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Titel</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="input-field"
+                required
+                maxLength={100}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Kategorie</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="input-field"
+                required
+              >
+                <option value="">Wähle eine Kategorie...</option>
+                <option value="📷 Foto-Nutzung">📷 Foto-Nutzung</option>
+                <option value="🎨 Bild/Grafik-Nutzung">🎨 Bild/Grafik-Nutzung</option>
+                <option value="Musiknutzung">Musiknutzung</option>
+                <option value="Videonutzung">Videonutzung</option>
+                <option value="Textnutzung">Textnutzung</option>
+                <option value="Creative Commons">Creative Commons</option>
+                <option value="Lizenzfragen">Lizenzfragen</option>
+                <option value="Sonstiges">Sonstiges</option>
+              </select>
+            </div>
+
+            {(category === "📷 Foto-Nutzung" || category === "🎨 Bild/Grafik-Nutzung") && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p className="text-sm text-blue-900 font-medium mb-2">
+                  {category === "📷 Foto-Nutzung" ? "📷 Foto:" : "🎨 Bild/Grafik:"}
+                </p>
+                <p className="text-xs text-blue-800">
+                  {category === "📷 Foto-Nutzung" 
+                    ? "Fotos sind in der Schweiz grundsätzlich IMMER geschützt (50 Jahre ab Herstellung, Art. 29 Abs. 2 lit. c URG)."
+                    : "Bilder/Grafiken sind nur geschützt, wenn sie individuellen Charakter haben (70 Jahre nach Tod, Art. 2 URG)."}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Beschreibung</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="input-field"
+                rows={6}
+                required
+                maxLength={500}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {description.length}/500 Zeichen
+              </p>
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-secondary flex-1"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn-primary flex-1 disabled:opacity-50"
+              >
+                {saving ? "Speichert..." : "Speichern"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
