@@ -826,7 +826,7 @@ export default function CopyrightCheck() {
                     Zurück
                   </button>
                   <button
-                    onClick={() => setStep(4)}
+                    onClick={() => setStep(3)}
                     disabled={isAICreated === null || (isAICreated === true && hasHumanCreativity === null)}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
@@ -837,7 +837,7 @@ export default function CopyrightCheck() {
             )}
 
             {/* Step 3: Source */}
-            {step === 4 && (
+            {step === 3 && (
               <div className="card">
                 <h2 className="text-2xl font-bold mb-6">Schritt 3: Woher stammt das Werk?</h2>
                 
@@ -930,7 +930,7 @@ export default function CopyrightCheck() {
               </div>
             )}
 
-            {/* Step 3: Public Domain Check */}
+            {/* Step 4: Public Domain Check */}
             {step === 4 && (
               <div className="card">
                 <h2 className="text-2xl font-bold mb-6">Schritt 4: Ist das Werk gemeinfrei?</h2>
@@ -989,14 +989,14 @@ export default function CopyrightCheck() {
                 </Accordion>
 
                 <div className="flex space-x-4 mt-6">
-                  <button onClick={() => setStep(2)} className="btn-secondary flex-1">
+                  <button onClick={() => setStep(4)} className="btn-secondary flex-1">
                     Zurück
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Step 4: CC License Check */}
+            {/* Step 5: CC License Check */}
             {step === 5 && (
               <div className="card">
                 <h2 className="text-2xl font-bold mb-6">Schritt 5: Hat das Werk eine Creative Commons Lizenz?</h2>
