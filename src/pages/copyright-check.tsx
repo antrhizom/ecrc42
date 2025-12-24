@@ -56,12 +56,17 @@ const SOURCE_TYPES = [
 ]
 
 const USAGE_TYPES = [
-  '📖 Schriftliche Arbeit (Schule/Uni)',
   '🎓 Präsentation (Unterricht)',
-  '📰 Blogpost / Online-Artikel',
-  '📱 Social Media',
+  '📖 Schriftliche Arbeit (Schule/Uni)',
+  '📰 Schul-Newsletter / Elternbrief',
+  '🌐 Schulwebsite / Intranet',
+  '📋 Jahresbericht / Broschüre',
+  '📚 Mediothek (Ausstellung, Katalog)',
+  '🍽️ Mensa (Speisekarte, Poster)',
+  '🔧 Hausdienst (Beschilderung, Infotafel)',
+  '📱 Social Media (Schul-Account)',
+  '🎬 Video-Projekt (YouTube, Schul-TV)',
   '💼 Kommerzielle Nutzung',
-  '🎬 Video-Projekt (YouTube)',
   '📚 Buch / E-Book',
   '🎨 Eigenes Kunstwerk'
 ]
@@ -648,6 +653,116 @@ export default function CopyrightCheck() {
             {step === 1 && (
               <div className="card">
                 <h2 className="text-2xl font-bold mb-6">Schritt 1: Was möchtest du nutzen?</h2>
+
+                {/* Quick-Start Szenarien */}
+                <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-ecrc-blue">
+                  <h3 className="font-bold mb-3 flex items-center">
+                    ⚡ Quick-Start: Häufige Schul-Szenarien
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Klicke auf ein Szenario, um direkt loszulegen:
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        setMediaType('📷 Foto')
+                        setDescription('Foto für Schul-Newsletter')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">📰</span>
+                        <div>
+                          <p className="font-bold text-sm">Newsletter/Elternbrief</p>
+                          <p className="text-xs text-gray-600">Foto für Schulinfo</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMediaType('📷 Foto')
+                        setDescription('Foto für Schulwebsite')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">🌐</span>
+                        <div>
+                          <p className="font-bold text-sm">Schulwebsite</p>
+                          <p className="text-xs text-gray-600">Bild für öffentliche Seite</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMediaType('🎨 Bild/Grafik')
+                        setDescription('Buchcover für Mediothek-Katalog')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">📚</span>
+                        <div>
+                          <p className="font-bold text-sm">Mediothek-Katalog</p>
+                          <p className="text-xs text-gray-600">Buchcover oder Illustration</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMediaType('📷 Foto')
+                        setDescription('Food-Foto für Speisekarte')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">🍽️</span>
+                        <div>
+                          <p className="font-bold text-sm">Mensa-Speisekarte</p>
+                          <p className="text-xs text-gray-600">Foto von Gericht</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMediaType('🎨 Bild/Grafik')
+                        setDescription('Icon für Wegweiser/Beschilderung')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">🔧</span>
+                        <div>
+                          <p className="font-bold text-sm">Hausdienst-Beschilderung</p>
+                          <p className="text-xs text-gray-600">Piktogramm oder Icon</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMediaType('📷 Foto')
+                        setDescription('Foto für Jahresbericht')
+                      }}
+                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
+                    >
+                      <div className="flex items-start">
+                        <span className="text-2xl mr-3">📋</span>
+                        <div>
+                          <p className="font-bold text-sm">Jahresbericht/Broschüre</p>
+                          <p className="text-xs text-gray-600">Foto für Publikation</p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-3">
+                    💡 Oder wähle unten manuell aus
+                  </p>
+                </div>
                 
                 <p className="text-gray-600 mb-4">Wähle die Art des fremden Werks:</p>
                 
@@ -949,10 +1064,7 @@ export default function CopyrightCheck() {
                   <p className="font-medium mb-4">Ist dieses Werk gemeinfrei?</p>
                   <div className="flex gap-4">
                     <button
-                      onClick={() => {
-                        setIsPublicDomain(true)
-                        setStep(7) // Skip to usage type
-                      }}
+                      onClick={() => setIsPublicDomain(true)}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         isPublicDomain === true
                           ? 'border-green-500 bg-green-50 text-green-900'
@@ -963,10 +1075,7 @@ export default function CopyrightCheck() {
                       Ja, gemeinfrei
                     </button>
                     <button
-                      onClick={() => {
-                        setIsPublicDomain(false)
-                        setStep(5)
-                      }}
+                      onClick={() => setIsPublicDomain(false)}
                       className={`flex-1 p-4 border-2 rounded-lg font-medium transition-colors ${
                         isPublicDomain === false
                           ? 'border-red-500 bg-red-50 text-red-900'
@@ -989,8 +1098,21 @@ export default function CopyrightCheck() {
                 </Accordion>
 
                 <div className="flex space-x-4 mt-6">
-                  <button onClick={() => setStep(4)} className="btn-secondary flex-1">
+                  <button onClick={() => setStep(3)} className="btn-secondary flex-1">
                     Zurück
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (isPublicDomain === true) {
+                        setStep(7) // Skip to usage type
+                      } else {
+                        setStep(5) // Go to CC License check
+                      }
+                    }}
+                    disabled={isPublicDomain === null}
+                    className="btn-primary flex-1 disabled:opacity-50"
+                  >
+                    Weiter
                   </button>
                 </div>
               </div>
@@ -1322,43 +1444,223 @@ export default function CopyrightCheck() {
                     <div className="mt-4">
                       <Accordion title="🎓 Unterrichtsausnahme (Art. 19 URG)">
                         <p className="mb-2">Im Unterricht darfst du geschützte Werke nutzen, wenn:</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>Es <strong>nur im Klassenzimmer</strong> gezeigt wird</li>
-                        <li>Oder auf <strong>geschütztem LMS</strong> (Moodle, OLAT - nur für Klasse)</li>
-                        <li>Für <strong>pädagogische Zwecke</strong></li>
-                      </ul>
-                      <p className="mt-2 font-medium text-red-700">NICHT erlaubt: Auf öffentlicher Schulwebsite posten!</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>Es <strong>nur im Klassenzimmer</strong> gezeigt wird</li>
+                          <li>Oder auf <strong>geschütztem LMS</strong> (Moodle, OLAT - nur für Klasse)</li>
+                          <li>Für <strong>pädagogische Zwecke</strong></li>
+                        </ul>
+                        <p className="mt-2 font-medium text-red-700">NICHT erlaubt: Auf öffentlicher Schulwebsite posten!</p>
+                        
+                        <div className="mt-4 pt-4 border-t border-gray-300">
+                          <p className="font-medium mb-2">🏫 Beispiele für verschiedene Schul-Abteilungen:</p>
+                          <ul className="list-disc pl-5 space-y-2 text-sm">
+                            <li><strong>Lehrperson:</strong> Foto in Präsentation (nur Unterricht) → ✅ Erlaubt</li>
+                            <li><strong>Sekretariat:</strong> Foto im Newsletter an Eltern → ❌ Lizenz nötig</li>
+                            <li><strong>Mediothek:</strong> Buchcover in Katalog (nur intern) → ✅ Erlaubt</li>
+                            <li><strong>Hausdienst:</strong> Icon auf Wegweiser → ⚠️ Je nach Quelle</li>
+                            <li><strong>Mensa:</strong> Foto auf Speisekarte (öffentlich) → ❌ Lizenz nötig</li>
+                          </ul>
+                        </div>
                       </Accordion>
                     </div>
                   </div>
                 )}
 
                 {(usageType.includes('Blogpost') || usageType.includes('Social Media') || usageType.includes('Video')) && !isPublicDomain && (
-                  <div className="mb-6 p-6 bg-gray-50 rounded-lg">
-                    <p className="font-medium mb-4">Wie nutzt du das Werk?</p>
-                    <div className="flex gap-4">
-                      <button
-                        onClick={() => setUsageContext('zitat')}
-                        className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
-                          usageContext === 'zitat'
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        Als Zitat/Beleg
-                      </button>
-                      <button
-                        onClick={() => setUsageContext('hauptbild')}
-                        className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
-                          usageContext === 'hauptbild'
-                            ? 'border-red-500 bg-red-50'
-                            : 'border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        Als Hauptbild
-                      </button>
+                  <>
+                    <div className="mb-6 p-6 bg-gray-50 rounded-lg">
+                      <p className="font-medium mb-4">Wie nutzt du das Werk?</p>
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => setUsageContext('zitat')}
+                          className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
+                            usageContext === 'zitat'
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          Als Zitat/Beleg
+                        </button>
+                        <button
+                          onClick={() => setUsageContext('hauptbild')}
+                          className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
+                            usageContext === 'hauptbild'
+                              ? 'border-red-500 bg-red-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          Als Hauptbild
+                        </button>
+                      </div>
                     </div>
-                  </div>
+
+                    <Accordion title="📱 Social Media für Schulen: Was gilt?">
+                      <div className="space-y-3">
+                        <p className="font-medium text-red-700">⚠️ Social Media = IMMER öffentlich!</p>
+                        
+                        <div className="bg-red-50 p-3 rounded border-l-4 border-red-500">
+                          <strong className="text-red-900">❌ Nicht erlaubt ohne Lizenz:</strong>
+                          <ul className="list-disc pl-5 text-sm text-red-800 mt-1">
+                            <li>Fremde Fotos als Hauptbild</li>
+                            <li>Geschützte Grafiken/Illustrationen</li>
+                            <li>Musik in Videos (auch kurze Ausschnitte!)</li>
+                            <li>Film-/TV-Screenshots</li>
+                          </ul>
+                        </div>
+
+                        <div className="bg-green-50 p-3 rounded border-l-4 border-green-500">
+                          <strong className="text-green-900">✅ Sichere Alternativen:</strong>
+                          <ul className="list-disc pl-5 text-sm text-green-800 mt-1">
+                            <li><strong>Eigene Fotos</strong> von Schulevents (mit Einwilligung!)</li>
+                            <li><strong>Lizenzfreie Bilder:</strong> Unsplash, Pixabay, Pexels</li>
+                            <li><strong>CC-lizenzierte Werke</strong> mit Quellenangabe</li>
+                            <li><strong>Canva</strong> (mit Pro-Lizenz für kommerzielle Nutzung)</li>
+                          </ul>
+                        </div>
+
+                        <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                          <strong className="text-blue-900">💡 Praxis-Beispiele Schulen:</strong>
+                          <ul className="list-disc pl-5 text-sm text-blue-800 mt-1">
+                            <li><strong>Tag der offenen Tür:</strong> Eigene Fotos! (Person-Rechte beachten)</li>
+                            <li><strong>Erfolgs-Story:</strong> Zitat aus Artikel mit Quelle → ✅</li>
+                            <li><strong>Event-Ankündigung:</strong> Lizenzfreies Bild als Hintergrund → ✅</li>
+                            <li><strong>Schülerarbeit:</strong> Mit Einwilligung der Eltern → ✅</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </Accordion>
+                  </>
+                )}
+
+                {/* Schulverwaltungs-spezifische Fragen */}
+                {(usageType.includes('Newsletter') || usageType.includes('Schulwebsite') || usageType.includes('Jahresbericht')) && !isPublicDomain && (
+                  <>
+                    <div className="mb-6 p-6 bg-gray-50 rounded-lg">
+                      <p className="font-medium mb-4">Ist die Publikation öffentlich zugänglich?</p>
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => setIsPublic(true)}
+                          className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
+                            isPublic === true
+                              ? 'border-red-500 bg-red-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          Ja, öffentlich (Website, Social Media)
+                        </button>
+                        <button
+                          onClick={() => setIsPublic(false)}
+                          className={`flex-1 p-3 border-2 rounded-lg font-medium transition-colors ${
+                            isPublic === false
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          Nein, nur intern (Intranet, geschlossener Verteiler)
+                        </button>
+                      </div>
+                    </div>
+
+                    <Accordion title="📋 Schulverwaltung: Was ist erlaubt?">
+                      <div className="space-y-3">
+                        <div className="bg-green-50 p-3 rounded border-l-4 border-green-500">
+                          <strong className="text-green-900">✅ Intern erlaubt:</strong>
+                          <ul className="list-disc pl-5 text-sm text-green-800 mt-1">
+                            <li>Newsletter nur an Eltern (geschlossener Verteiler)</li>
+                            <li>Intranet (nur für Schulmitglieder)</li>
+                            <li>Gedruckte Broschüren (begrenzte Auflage)</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="bg-red-50 p-3 rounded border-l-4 border-red-500">
+                          <strong className="text-red-900">❌ Lizenz erforderlich für:</strong>
+                          <ul className="list-disc pl-5 text-sm text-red-800 mt-1">
+                            <li>Öffentliche Schulwebsite</li>
+                            <li>Social Media Posts</li>
+                            <li>Jahresbericht (öffentlich einsehbar)</li>
+                            <li>Poster/Plakate in öffentlichen Bereichen</li>
+                          </ul>
+                        </div>
+
+                        <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-500">
+                          <strong className="text-blue-900">💡 Praxis-Tipps:</strong>
+                          <ul className="list-disc pl-5 text-sm text-blue-800 mt-1">
+                            <li><strong>Sekretariat:</strong> Verwende lizenzfreie Bilder (Unsplash, Pixabay)</li>
+                            <li><strong>Mediothek:</strong> Buchcover sind Zitatrecht (Art. 25 URG)</li>
+                            <li><strong>Hausdienst:</strong> Erstelle eigene Icons oder nutze CC-BY</li>
+                            <li><strong>Mensa:</strong> Fotografiere eigene Gerichte!</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </Accordion>
+                  </>
+                )}
+
+                {(usageType.includes('Mediothek') || usageType.includes('Mensa') || usageType.includes('Hausdienst')) && !isPublicDomain && (
+                  <>
+                    <div className="mb-6 p-6 bg-gray-50 rounded-lg">
+                      <p className="font-medium mb-4">Wo wird das Werk verwendet?</p>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            setIsPublic(false)
+                            setUsageContext('intern')
+                          }}
+                          className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
+                            usageContext === 'intern'
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          <strong>Nur intern</strong> (Mediothek-Katalog, Mensa-Menü für Schulangehörige)
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsPublic(true)
+                            setUsageContext('oeffentlich')
+                          }}
+                          className={`w-full p-4 border-2 rounded-lg text-left transition-colors ${
+                            usageContext === 'oeffentlich'
+                              ? 'border-red-500 bg-red-50'
+                              : 'border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          <strong>Öffentlich zugänglich</strong> (Poster im Eingang, Website, Aushang)
+                        </button>
+                      </div>
+                    </div>
+
+                    <Accordion title="🏫 Beispiele aus dem Schulalltag">
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <strong className="text-ecrc-blue">📚 Mediothek:</strong>
+                          <ul className="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Buchcover</strong> im internen Katalog → ✅ Zitatrecht (Art. 25 URG)</li>
+                            <li><strong>Autorenfotos</strong> auf Ausstellung → ⚠️ Lizenz von Fotograf nötig</li>
+                            <li><strong>Film-Poster</strong> für Leseliste → ✅ Wenn nur Liste, nicht Website</li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <strong className="text-ecrc-green">🍽️ Mensa:</strong>
+                          <ul className="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Food-Fotos</strong> von Gerichten → 💡 Eigene Fotos machen!</li>
+                            <li><strong>Allergie-Icons</strong> → ✅ Verwende offizielle Icons (BAG)</li>
+                            <li><strong>Hintergrundbild</strong> Speisekarte → ⚠️ Lizenzfreie Quelle nutzen</li>
+                          </ul>
+                        </div>
+
+                        <div>
+                          <strong className="text-orange-600">🔧 Hausdienst:</strong>
+                          <ul className="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>Piktogramme</strong> (WC, Notausgang) → ✅ ISO-Normen sind frei nutzbar</li>
+                            <li><strong>Wegweiser-Icons</strong> → ✅ Nutze Font Awesome, Material Icons (Open Source)</li>
+                            <li><strong>Infoplakate</strong> → ⚠️ Lizenzfreie Bilder oder selbst gestalten</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </Accordion>
+                  </>
                 )}
 
                 {usageType.includes('Kommerzielle') && !hasCCLicense && (
