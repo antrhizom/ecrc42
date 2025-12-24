@@ -43,7 +43,8 @@ const MEDIA_TYPES = [
   '🎬 Video',
   '📝 Text',
   '💻 Software/Code',
-  '🎨 Grafik/Design'
+  '🎨 Grafik/Design',
+  '📦 Sonstiges'
 ]
 
 const SOURCE_TYPES = [
@@ -52,7 +53,8 @@ const SOURCE_TYPES = [
   '🎓 Wissenschaftliche Quelle',
   '👤 Von einer Person direkt erhalten',
   '💰 Gekauft (Stock-Foto, etc.)',
-  '🎁 Creative Commons / Open Source'
+  '🎁 Creative Commons / Open Source',
+  '📦 Sonstiges'
 ]
 
 const USAGE_TYPES = [
@@ -68,7 +70,8 @@ const USAGE_TYPES = [
   '🎬 Video-Projekt (YouTube, Schul-TV)',
   '💼 Kommerzielle Nutzung',
   '📚 Buch / E-Book',
-  '🎨 Eigenes Kunstwerk'
+  '🎨 Eigenes Kunstwerk',
+  '📦 Sonstiges'
 ]
 
 const CC_LICENSES = [
@@ -653,116 +656,6 @@ export default function CopyrightCheck() {
             {step === 1 && (
               <div className="card">
                 <h2 className="text-2xl font-bold mb-6">Schritt 1: Was möchtest du nutzen?</h2>
-
-                {/* Quick-Start Szenarien */}
-                <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border-2 border-ecrc-blue">
-                  <h3 className="font-bold mb-3 flex items-center">
-                    ⚡ Quick-Start: Häufige Schul-Szenarien
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Klicke auf ein Szenario, um direkt loszulegen:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <button
-                      onClick={() => {
-                        setMediaType('📷 Foto')
-                        setDescription('Foto für Schul-Newsletter')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">📰</span>
-                        <div>
-                          <p className="font-bold text-sm">Newsletter/Elternbrief</p>
-                          <p className="text-xs text-gray-600">Foto für Schulinfo</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setMediaType('📷 Foto')
-                        setDescription('Foto für Schulwebsite')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">🌐</span>
-                        <div>
-                          <p className="font-bold text-sm">Schulwebsite</p>
-                          <p className="text-xs text-gray-600">Bild für öffentliche Seite</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setMediaType('🎨 Bild/Grafik')
-                        setDescription('Buchcover für Mediothek-Katalog')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">📚</span>
-                        <div>
-                          <p className="font-bold text-sm">Mediothek-Katalog</p>
-                          <p className="text-xs text-gray-600">Buchcover oder Illustration</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setMediaType('📷 Foto')
-                        setDescription('Food-Foto für Speisekarte')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">🍽️</span>
-                        <div>
-                          <p className="font-bold text-sm">Mensa-Speisekarte</p>
-                          <p className="text-xs text-gray-600">Foto von Gericht</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setMediaType('🎨 Bild/Grafik')
-                        setDescription('Icon für Wegweiser/Beschilderung')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">🔧</span>
-                        <div>
-                          <p className="font-bold text-sm">Hausdienst-Beschilderung</p>
-                          <p className="text-xs text-gray-600">Piktogramm oder Icon</p>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setMediaType('📷 Foto')
-                        setDescription('Foto für Jahresbericht')
-                      }}
-                      className="p-4 bg-white rounded-lg border-2 border-gray-200 hover:border-ecrc-blue hover:shadow-md transition-all text-left"
-                    >
-                      <div className="flex items-start">
-                        <span className="text-2xl mr-3">📋</span>
-                        <div>
-                          <p className="font-bold text-sm">Jahresbericht/Broschüre</p>
-                          <p className="text-xs text-gray-600">Foto für Publikation</p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-3">
-                    💡 Oder wähle unten manuell aus
-                  </p>
-                </div>
                 
                 <p className="text-gray-600 mb-4">Wähle die Art des fremden Werks:</p>
                 
