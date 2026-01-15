@@ -93,28 +93,40 @@ export default function Dashboard() {
 
   const downloadCheck = (check: CheckedProduct) => {
     const data = {
-      Medientyp: check.mediaType,
-      Quelle: check.sourceType,
-      Beschreibung: check.description,
-      Nutzungsart: check.usageType,
-      Gemeinfrei: check.isPublicDomain ? 'Ja' : 'Nein',
+      'Medientyp': check.mediaType,
+      'Quelle': check.sourceType,
+      'Beschreibung': check.description || '-',
+      'KI-erstellt': check.isAICreated !== undefined ? (check.isAICreated ? 'Ja' : 'Nein') : '-',
+      'Menschliche Kreativität': check.hasHumanCreativity !== undefined ? (check.hasHumanCreativity ? 'Ja' : 'Nein') : '-',
+      'Gemeinfrei': check.isPublicDomain ? 'Ja' : 'Nein',
       'CC-Lizenz': check.hasCCLicense ? check.ccLicense : 'Keine',
-      Ergebnis: check.result.allowed ? 'Erlaubt' : 'Nicht erlaubt',
-      Begründung: check.result.reason,
-      Warnung: check.result.warning || '-',
-      Datum: new Date(check.createdAt).toLocaleString('de-CH')
+      'Nutzungsart': check.usageType,
+      'Kontext': check.usageContext || '-',
+      'Öffentlich': check.isPublic ? 'Ja' : 'Nein',
+      'Kommerziell': check.isCommercial ? 'Ja' : 'Nein',
+      'Lizenz vorhanden': check.hasLicense !== undefined ? (check.hasLicense ? 'Ja' : 'Nein') : '-',
+      'Ergebnis': check.result.allowed ? '✅ Erlaubt' : '❌ Nicht erlaubt',
+      'Begründung': check.result.reason,
+      'Warnung': check.result.warning || '-',
+      'Datum': new Date(check.createdAt).toLocaleString('de-CH')
     }
 
-    const text = Object.entries(data)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('\n')
+    const text = '='.repeat(60) + '\n'
+      + 'URHEBERRECHTS-ABKLÄRUNG ECRC42\n'
+      + '='.repeat(60) + '\n\n'
+      + Object.entries(data).map(([key, value]) => `${key}:\n  ${value}\n`).join('\n')
+      + '\n' + '='.repeat(60) + '\n'
+      + 'Erstellt mit ECRC42 - Hochschule Luzern\n'
+      + '='.repeat(60)
 
-    const blob = new Blob([text], { type: 'text/plain' })
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `Urheberrechts-Abklärung_${new Date(check.createdAt).toISOString().split('T')[0]}.txt`
+    a.download = `ECRC42_Abklärung_${new Date(check.createdAt).toISOString().split('T')[0]}.txt`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
   }
 
@@ -124,194 +136,348 @@ export default function Dashboard() {
       timeStyle: 'short'
     })
 
-    const html = `
-<!DOCTYPE html>
-<html>
+    const html = `<!DOCTYPE html>
+<html lang="de">
 <head>
   <meta charset="utf-8">
-  <title>Urheberrechts-Abklärung</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urheberrechts-Abklärung ECRC42</title>
   <style>
-    @page { margin: 2cm; }
+    @page { 
+      margin: 2cm;
+      size: A4;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.8;
+      color: #1f2937;
+      background: white;
+      padding: 30px;
       max-width: 800px;
       margin: 0 auto;
-      padding: 20px;
     }
-    h1 {
-      color: #2563eb;
-      border-bottom: 3px solid #2563eb;
-      padding-bottom: 10px;
-      margin-bottom: 20px;
-    }
-    h2 {
-      color: #1e40af;
-      margin-top: 30px;
-      margin-bottom: 15px;
-      border-left: 4px solid #2563eb;
-      padding-left: 10px;
-    }
-    .meta {
-      color: #666;
-      font-size: 14px;
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 4px solid #2563eb;
       margin-bottom: 30px;
     }
-    .section {
-      background: #f9fafb;
+    .header h1 {
+      color: #2563eb;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .header .subtitle {
+      color: #6b7280;
+      font-size: 16px;
+    }
+    .meta {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 40px;
       padding: 15px;
-      margin: 15px 0;
+      background: #f9fafb;
       border-radius: 8px;
-      border-left: 4px solid #6b7280;
     }
     .step {
-      margin: 20px 0;
-      padding: 15px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .result {
-      padding: 20px;
       margin: 30px 0;
-      border-radius: 8px;
-      border: 3px solid;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border-left: 6px solid #6b7280;
+      page-break-inside: avoid;
     }
-    .result.allowed {
-      background: #f0fdf4;
-      border-color: #22c55e;
-      color: #15803d;
+    .step h2 {
+      color: #1e40af;
+      font-size: 20px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
     }
-    .result.denied {
-      background: #fef2f2;
-      border-color: #ef4444;
-      color: #991b1b;
+    .step h2 .emoji {
+      font-size: 24px;
+      margin-right: 10px;
     }
-    .warning {
-      background: #fff7ed;
-      border-left: 4px solid #f97316;
+    .step-content {
+      background: white;
       padding: 15px;
-      margin-top: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
     }
-    .label {
-      font-weight: bold;
+    .field {
+      margin: 12px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .field:last-child {
+      border-bottom: none;
+    }
+    .field .label {
+      font-weight: 600;
       color: #4b5563;
       display: inline-block;
-      min-width: 150px;
+      min-width: 180px;
     }
-    .value {
+    .field .value {
       color: #111827;
+      display: inline;
     }
     .badge {
       display: inline-block;
-      padding: 4px 12px;
-      border-radius: 12px;
+      padding: 6px 16px;
+      border-radius: 20px;
       font-size: 14px;
-      font-weight: bold;
+      font-weight: 700;
+      margin-left: 10px;
     }
-    .badge.yes { background: #dcfce7; color: #15803d; }
-    .badge.no { background: #fee2e2; color: #991b1b; }
+    .badge.yes { 
+      background: #dcfce7; 
+      color: #15803d;
+      border: 2px solid #22c55e;
+    }
+    .badge.no { 
+      background: #fee2e2; 
+      color: #991b1b;
+      border: 2px solid #ef4444;
+    }
+    .result {
+      margin: 40px 0;
+      padding: 30px;
+      border-radius: 12px;
+      border: 4px solid;
+      page-break-inside: avoid;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .result.allowed {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border-color: #22c55e;
+    }
+    .result.denied {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border-color: #ef4444;
+    }
+    .result h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .result h2 .emoji {
+      font-size: 32px;
+      margin-right: 15px;
+    }
+    .result.allowed h2 { color: #15803d; }
+    .result.denied h2 { color: #991b1b; }
+    .result .status {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 20px 0;
+    }
+    .result.allowed .status { color: #15803d; }
+    .result.denied .status { color: #991b1b; }
+    .result .reason {
+      font-size: 16px;
+      line-height: 1.8;
+      margin: 15px 0;
+      color: #374151;
+    }
+    .warning {
+      background: #fff7ed;
+      border-left: 6px solid #f97316;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+    .warning .title {
+      font-weight: 700;
+      color: #ea580c;
+      font-size: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .warning .title .emoji {
+      font-size: 20px;
+      margin-right: 10px;
+    }
+    .warning .text {
+      color: #9a3412;
+      font-size: 14px;
+    }
+    .footer {
+      margin-top: 60px;
+      padding-top: 30px;
+      border-top: 2px solid #e5e7eb;
+      text-align: center;
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .footer .logo {
+      font-weight: 700;
+      color: #2563eb;
+      font-size: 14px;
+    }
     @media print {
-      body { margin: 0; padding: 20px; }
-      .step { page-break-inside: avoid; }
+      body { 
+        padding: 0;
+        max-width: 100%;
+      }
+      .step { 
+        page-break-inside: avoid;
+      }
+      .result {
+        page-break-inside: avoid;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🎓 Urheberrechts-Abklärung ECRC42</h1>
+  <div class="header">
+    <h1>🎓 Urheberrechts-Abklärung</h1>
+    <div class="subtitle">ECRC42 - Educational Copyright Resource Center</div>
+  </div>
+
   <div class="meta">Erstellt am: ${date}</div>
 
   <div class="step">
-    <h2>📋 Schritt 1: Was wird genutzt?</h2>
-    <div class="section">
-      <div><span class="label">Medientyp:</span> <span class="value">${check.mediaType}</span></div>
-      ${check.description ? `<div style="margin-top:10px;font-style:italic;">"${check.description}"</div>` : ''}
+    <h2><span class="emoji">📋</span>Schritt 1: Was wird genutzt?</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">Medientyp:</span>
+        <span class="value"><strong>${check.mediaType}</strong></span>
+      </div>
+      ${check.description ? `<div class="field"><span class="label">Beschreibung:</span><span class="value" style="font-style:italic;">"${check.description}"</span></div>` : ''}
     </div>
   </div>
 
   ${check.isAICreated !== undefined ? `
   <div class="step">
-    <h2>🤖 Schritt 2: KI-Erstellung</h2>
-    <div class="section">
-      <div><span class="label">Mit KI erstellt:</span> <span class="badge ${check.isAICreated ? 'no' : 'yes'}">${check.isAICreated ? 'Ja' : 'Nein'}</span></div>
+    <h2><span class="emoji">🤖</span>Schritt 2: KI-Erstellung</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">Mit KI erstellt:</span>
+        <span class="badge ${check.isAICreated ? 'no' : 'yes'}">${check.isAICreated ? 'Ja' : 'Nein'}</span>
+      </div>
       ${check.isAICreated && check.hasHumanCreativity !== undefined ? `
-        <div style="margin-top:10px;"><span class="label">Menschliche Kreativität:</span> <span class="badge ${check.hasHumanCreativity ? 'yes' : 'no'}">${check.hasHumanCreativity ? 'Ja' : 'Nein'}</span></div>
+        <div class="field">
+          <span class="label">Menschliche Kreativität:</span>
+          <span class="badge ${check.hasHumanCreativity ? 'yes' : 'no'}">${check.hasHumanCreativity ? 'Ja' : 'Nein'}</span>
+        </div>
       ` : ''}
     </div>
   </div>
   ` : ''}
 
   <div class="step">
-    <h2>📍 Schritt 3: Woher stammt es?</h2>
-    <div class="section">
-      <div><span class="label">Quelle:</span> <span class="value">${check.sourceType}</span></div>
+    <h2><span class="emoji">📍</span>Schritt 3: Woher stammt es?</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">Quelle:</span>
+        <span class="value"><strong>${check.sourceType}</strong></span>
+      </div>
     </div>
   </div>
 
   <div class="step">
-    <h2>⚖️ Schritt 4: Gemeinfrei?</h2>
-    <div class="section">
-      <div><span class="label">Gemeinfrei:</span> <span class="badge ${check.isPublicDomain ? 'yes' : 'no'}">${check.isPublicDomain ? 'Ja' : 'Nein'}</span></div>
+    <h2><span class="emoji">⚖️</span>Schritt 4: Gemeinfrei?</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">Das Werk ist gemeinfrei:</span>
+        <span class="badge ${check.isPublicDomain ? 'yes' : 'no'}">${check.isPublicDomain ? 'Ja' : 'Nein'}</span>
+      </div>
     </div>
   </div>
 
   ${!check.isPublicDomain ? `
   <div class="step">
-    <h2>🅭 Schritt 5: Creative Commons?</h2>
-    <div class="section">
-      <div><span class="label">CC-lizenziert:</span> <span class="badge ${check.hasCCLicense ? 'yes' : 'no'}">${check.hasCCLicense ? 'Ja' : 'Nein'}</span></div>
-      ${check.hasCCLicense ? `<div style="margin-top:10px;"><span class="label">Lizenz:</span> <span class="value" style="color:#2563eb;font-weight:bold;">${check.ccLicense}</span></div>` : ''}
+    <h2><span class="emoji">🅭</span>Schritt 5: Creative Commons?</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">CC-lizenziert:</span>
+        <span class="badge ${check.hasCCLicense ? 'yes' : 'no'}">${check.hasCCLicense ? 'Ja' : 'Nein'}</span>
+      </div>
+      ${check.hasCCLicense ? `
+        <div class="field">
+          <span class="label">Lizenz:</span>
+          <span class="value" style="color:#2563eb;font-weight:700;font-size:16px;">${check.ccLicense}</span>
+        </div>
+      ` : ''}
     </div>
   </div>
   ` : ''}
 
   <div class="step">
-    <h2>🎯 Schritt 7: Wie wird es genutzt?</h2>
-    <div class="section">
-      <div><span class="label">Nutzungsart:</span> <span class="value">${check.usageType}</span></div>
-      ${check.usageContext ? `<div style="margin-top:10px;"><span class="label">Kontext:</span> <span class="value">${check.usageContext}</span></div>` : ''}
-      <div style="margin-top:10px;"><span class="label">Öffentlich:</span> <span class="value">${check.isPublic ? 'Ja' : 'Nein'}</span></div>
-      <div style="margin-top:10px;"><span class="label">Kommerziell:</span> <span class="value">${check.isCommercial ? 'Ja' : 'Nein'}</span></div>
-      ${check.hasLicense !== undefined ? `<div style="margin-top:10px;"><span class="label">Lizenz vorhanden:</span> <span class="value">${check.hasLicense ? 'Ja' : 'Nein'}</span></div>` : ''}
+    <h2><span class="emoji">🎯</span>Schritt 7: Wie wird es genutzt?</h2>
+    <div class="step-content">
+      <div class="field">
+        <span class="label">Nutzungsart:</span>
+        <span class="value"><strong>${check.usageType}</strong></span>
+      </div>
+      ${check.usageContext ? `
+        <div class="field">
+          <span class="label">Kontext:</span>
+          <span class="value">${check.usageContext}</span>
+        </div>
+      ` : ''}
+      <div class="field">
+        <span class="label">Öffentlich zugänglich:</span>
+        <span class="value">${check.isPublic ? 'Ja' : 'Nein'}</span>
+      </div>
+      <div class="field">
+        <span class="label">Kommerzielle Nutzung:</span>
+        <span class="value">${check.isCommercial ? 'Ja' : 'Nein'}</span>
+      </div>
+      ${check.hasLicense !== undefined ? `
+        <div class="field">
+          <span class="label">Lizenz vorhanden:</span>
+          <span class="value">${check.hasLicense ? 'Ja' : 'Nein'}</span>
+        </div>
+      ` : ''}
     </div>
   </div>
 
   <div class="result ${check.result.allowed ? 'allowed' : 'denied'}">
-    <h2 style="margin-top:0;color:inherit;">${check.result.allowed ? '✅' : '❌'} Ergebnis</h2>
-    <div style="font-size:20px;font-weight:bold;margin:15px 0;">
-      ${check.result.allowed ? 'Nutzung erlaubt' : 'Nutzung nicht erlaubt'}
-    </div>
-    <div style="font-size:16px;">${check.result.reason}</div>
+    <h2><span class="emoji">${check.result.allowed ? '✅' : '❌'}</span>Ergebnis</h2>
+    <div class="status">${check.result.allowed ? 'Nutzung erlaubt' : 'Nutzung nicht erlaubt'}</div>
+    <div class="reason">${check.result.reason}</div>
     ${check.result.warning ? `
     <div class="warning">
-      <strong>⚠️ Warnung:</strong><br>
-      ${check.result.warning}
+      <div class="title"><span class="emoji">⚠️</span>Wichtiger Hinweis</div>
+      <div class="text">${check.result.warning}</div>
     </div>
     ` : ''}
   </div>
 
-  <div style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:12px;">
-    <p>Dieses Dokument wurde automatisch erstellt mit ECRC42 - Urheberrechts-Check Tool</p>
-    <p>Hochschule Luzern - Educational Copyright Resource Center</p>
+  <div class="footer">
+    <div class="logo">ECRC42 - Educational Copyright Resource Center</div>
+    <div>Hochschule Luzern - Design & Kunst</div>
+    <div>Dieses Dokument wurde automatisch erstellt</div>
   </div>
-
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 500);
-    }
-  </script>
 </body>
-</html>
-    `
+</html>`
 
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
-      printWindow.document.write(html)
-      printWindow.document.close()
-    }
+    // Download als HTML-Datei (kann im Browser als PDF gespeichert werden)
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ECRC42_Abklärung_${new Date(check.createdAt).toISOString().split('T')[0]}.html`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    // Info für User
+    setTimeout(() => {
+      alert('💡 Tipp: Die heruntergeladene HTML-Datei kannst du im Browser öffnen und dann als PDF speichern (Datei → Drucken → Als PDF speichern)')
+    }, 500)
   }
 
   const handleLogout = async () => {
@@ -770,14 +936,14 @@ export default function Dashboard() {
                   className="btn-secondary flex-1"
                 >
                   <Download className="w-5 h-5 inline mr-2" />
-                  TXT Download
+                  TXT herunterladen
                 </button>
                 <button
                   onClick={() => downloadCheckPDF(selectedCheck)}
                   className="btn-primary flex-1"
                 >
                   <Download className="w-5 h-5 inline mr-2" />
-                  PDF Download
+                  HTML/PDF herunterladen
                 </button>
                 <button
                   onClick={() => setSelectedCheck(null)}
