@@ -2,10 +2,22 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { auth, db } from '@/lib/firebase'
 import { collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, increment, getDoc } from 'firebase/firestore'
-import { ArrowLeft, Plus, ThumbsUp, Search, Filter, Edit2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, ThumbsUp, Search, Filter, Edit2, Trash2, BarChart3 } from 'lucide-react'
 
 const EMOJI_OPTIONS = ['👍', '❤️', '🎯', '💡', '⭐', '🔥']
 const TAG_OPTIONS = ['#nützlich', '#relevant', '#wichtig', '#komplex', '#einfach', '#kreativ']
+
+const CATEGORIES = [
+  '📷 Foto-Nutzung',
+  '🎨 Bild/Grafik-Nutzung',
+  '📚 Lehrmittel',
+  'Musiknutzung',
+  'Videonutzung',
+  'Textnutzung',
+  'Creative Commons',
+  'Lizenzfragen',
+  'Sonstiges'
+]
 
 interface CaseExample {
   id: string
@@ -37,6 +49,7 @@ export default function CaseExamples() {
   const [editingCase, setEditingCase] = useState<CaseExample | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [userName, setUserName] = useState('')
   const [userEmail, setUserEmail] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
@@ -66,7 +79,7 @@ export default function CaseExamples() {
 
   useEffect(() => {
     filterCases()
-  }, [searchTerm, selectedTags, cases])
+  }, [searchTerm, selectedTags, selectedCategory, cases])
 
   const loadUserName = async () => {
     if (!auth.currentUser) return
@@ -91,6 +104,10 @@ export default function CaseExamples() {
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter(c => c.category === selectedCategory)
     }
 
     if (selectedTags.length > 0) {
@@ -262,6 +279,135 @@ export default function CaseExamples() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Statistics Dashboard */}
+        <div className="card mb-6 bg-gradient-to-br from-ecrc-blue/5 to-ecrc-purple/5 border-2 border-ecrc-blue/20">
+          <div className="flex items-center mb-4">
+            <BarChart3 className="w-6 h-6 text-ecrc-blue mr-2" />
+            <h2 className="text-xl font-bold">Statistik</h2>
+          </div>
+
+          {/* Gesamt & Kategorien */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Gesamtzahl */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">Gesamtanzahl</h3>
+              <div className="flex items-center justify-between">
+                <span className="text-4xl font-bold text-ecrc-blue">{cases.length}</span>
+                <span className="text-gray-500">Fallbeispiele</span>
+              </div>
+            </div>
+
+            {/* Kategorien */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">Kategorien</h3>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(category => {
+                  const count = cases.filter(c => c.category === category).length
+                  if (count === 0) return null
+                  return (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(selectedCategory === category ? '' : category)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        selectedCategory === category
+                          ? 'bg-ecrc-blue text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Hashtags */}
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">Top Hashtags</h3>
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                const tagCounts: Record<string, number> = {}
+                cases.forEach(c => {
+                  c.tags.forEach(tag => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1
+                  })
+                })
+                const sortedTags = Object.entries(tagCounts)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 10)
+                
+                if (sortedTags.length === 0) {
+                  return <span className="text-gray-400 text-sm">Noch keine Hashtags</span>
+                }
+                
+                return sortedTags.map(([tag, count]) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      if (selectedTags.includes(tag)) {
+                        setSelectedTags(selectedTags.filter(t => t !== tag))
+                      } else {
+                        setSelectedTags([...selectedTags, tag])
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      selectedTags.includes(tag)
+                        ? 'bg-ecrc-purple text-white shadow-md'
+                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                    }`}
+                  >
+                    {tag} ({count})
+                  </button>
+                ))
+              })()}
+            </div>
+          </div>
+
+          {/* Active Filters Display */}
+          {(selectedCategory || selectedTags.length > 0) && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-600">Aktive Filter:</span>
+                {selectedCategory && (
+                  <div className="flex items-center bg-ecrc-blue/10 border border-ecrc-blue px-3 py-1 rounded-full text-sm">
+                    <span className="text-ecrc-blue font-medium">{selectedCategory}</span>
+                    <button
+                      onClick={() => setSelectedCategory('')}
+                      className="ml-2 text-ecrc-blue hover:text-ecrc-blue/80"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {selectedTags.map(tag => (
+                  <div
+                    key={tag}
+                    className="flex items-center bg-purple-100 border border-purple-300 px-3 py-1 rounded-full text-sm"
+                  >
+                    <span className="text-purple-700 font-medium">{tag}</span>
+                    <button
+                      onClick={() => setSelectedTags(selectedTags.filter(t => t !== tag))}
+                      className="ml-2 text-purple-700 hover:text-purple-900"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    setSelectedCategory('')
+                    setSelectedTags([])
+                  }}
+                  className="text-sm text-gray-600 hover:text-gray-900 underline ml-2"
+                >
+                  Alle Filter zurücksetzen
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Search and Filter */}
         <div className="card mb-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -610,14 +756,9 @@ function AddCaseModal({ userName, onClose }: { userName: string, onClose: () => 
                 required
               >
                 <option value="">Wähle eine Kategorie...</option>
-                <option value="📷 Foto-Nutzung">📷 Foto-Nutzung</option>
-                <option value="🎨 Bild/Grafik-Nutzung">🎨 Bild/Grafik-Nutzung</option>
-                <option value="Musiknutzung">Musiknutzung</option>
-                <option value="Videonutzung">Videonutzung</option>
-                <option value="Textnutzung">Textnutzung</option>
-                <option value="Creative Commons">Creative Commons</option>
-                <option value="Lizenzfragen">Lizenzfragen</option>
-                <option value="Sonstiges">Sonstiges</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
             </div>
 
@@ -729,14 +870,9 @@ function EditCaseModal({ caseData, onClose }: { caseData: CaseExample, onClose: 
                 required
               >
                 <option value="">Wähle eine Kategorie...</option>
-                <option value="📷 Foto-Nutzung">📷 Foto-Nutzung</option>
-                <option value="🎨 Bild/Grafik-Nutzung">🎨 Bild/Grafik-Nutzung</option>
-                <option value="Musiknutzung">Musiknutzung</option>
-                <option value="Videonutzung">Videonutzung</option>
-                <option value="Textnutzung">Textnutzung</option>
-                <option value="Creative Commons">Creative Commons</option>
-                <option value="Lizenzfragen">Lizenzfragen</option>
-                <option value="Sonstiges">Sonstiges</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
             </div>
 
