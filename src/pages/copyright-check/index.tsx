@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { auth, db } from '@/lib/firebase'
-import { doc, collection, addDoc, updateDoc, increment, query, where, getDocs, getDoc } from 'firebase/firestore'
-import { ArrowLeft, CheckCircle2, XCircle, AlertCircle, ChevronDown, ChevronUp, Info, RotateCcw } from 'lucide-react'
+import { doc, collection, addDoc, updateDoc, increment, query, where, getDocs, getDoc, deleteDoc } from 'firebase/firestore'
+import { ArrowLeft, CheckCircle2, XCircle, AlertCircle, ChevronDown, ChevronUp, Info, RotateCcw, Download, Trash2 } from 'lucide-react'
 
 // Accordion Component
 const Accordion = ({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
@@ -179,6 +179,288 @@ export default function CopyrightCheck() {
     } catch (err) {
       console.error('Error loading checks:', err)
     }
+  }
+
+  const handleDeleteCheck = async (checkId: string) => {
+    if (!confirm('🗑️ Möchtest du diese Prüfung wirklich löschen?')) return
+
+    try {
+      await deleteDoc(doc(db, 'checked_products', checkId))
+      
+      // Reload list
+      await loadPreviousChecks()
+      
+      alert('✅ Prüfung gelöscht!')
+    } catch (err) {
+      console.error('Error deleting check:', err)
+      alert('❌ Fehler beim Löschen')
+    }
+  }
+
+  const handleDownloadCheck = (check: any) => {
+    const date = new Date(check.createdAt).toLocaleDateString('de-CH')
+    const html = generatePrintHTML(check)
+    
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ECRC42_Abklärung_${date.replace(/\./g, '-')}.html`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    alert('💡 Tipp: Die HTML-Datei kannst du im Browser öffnen und als PDF speichern (Drucken → Als PDF speichern)!')
+  }
+
+  const generatePrintHTML = (check: any): string => {
+    return `
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>ECRC42 Urheberrechts-Abklärung</title>
+  <style>
+    @page { margin: 2cm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6; 
+      color: #1a202c;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 4px solid #3b82f6;
+      margin-bottom: 30px;
+    }
+    .header h1 { font-size: 28px; color: #1e40af; margin-bottom: 8px; }
+    .header p { color: #64748b; font-size: 14px; }
+    .result-banner {
+      padding: 30px;
+      border-radius: 12px;
+      border: 4px solid;
+      margin-bottom: 30px;
+      text-align: center;
+      page-break-inside: avoid;
+    }
+    .result-banner.green { 
+      background: linear-gradient(to bottom right, #dcfce7, #bbf7d0);
+      border-color: #22c55e;
+    }
+    .result-banner.yellow {
+      background: linear-gradient(to bottom right, #fef3c7, #fde68a);
+      border-color: #eab308;
+    }
+    .result-banner.red {
+      background: linear-gradient(to bottom right, #fee2e2, #fecaca);
+      border-color: #ef4444;
+    }
+    .result-banner h2 { font-size: 32px; margin-bottom: 15px; }
+    .result-banner p { font-size: 18px; }
+    .section {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #f9fafb;
+      border-left: 6px solid;
+      border-radius: 8px;
+      page-break-inside: avoid;
+    }
+    .section.blue { border-color: #3b82f6; }
+    .section.green { border-color: #10b981; }
+    .section.purple { border-color: #8b5cf6; }
+    .section.yellow { border-color: #eab308; }
+    .section.orange { border-color: #f97316; }
+    .section.red { border-color: #ef4444; }
+    .section h3 { 
+      font-size: 18px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .field { margin-bottom: 10px; }
+    .field-label { 
+      display: inline-block;
+      min-width: 200px;
+      font-weight: 600;
+      color: #64748b;
+    }
+    .field-value { 
+      display: inline;
+      color: #1a202c;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .badge.yes { 
+      background: #dcfce7;
+      color: #166534;
+      border: 2px solid #22c55e;
+    }
+    .badge.no {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 2px solid #ef4444;
+    }
+    .list { margin-top: 10px; padding-left: 20px; }
+    .list-item { margin-bottom: 8px; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid #e5e7eb;
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+    }
+    @media print {
+      body { padding: 0; }
+      .result-banner, .section { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ECRC42</h1>
+    <p>Urheberrechts-Abklärung | Hochschule Luzern</p>
+    <p>Erstellt am: ${new Date(check.createdAt).toLocaleDateString('de-CH', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })}</p>
+  </div>
+
+  <div class="result-banner ${check.result.color}">
+    <h2>${check.result.title}</h2>
+    <p>${check.result.message}</p>
+  </div>
+
+  <div class="section blue">
+    <h3>1️⃣ Was wird genutzt?</h3>
+    <div class="field">
+      <span class="field-label">Medientyp:</span>
+      <span class="field-value"><strong>${check.mediaType}</strong></span>
+    </div>
+    ${check.description ? `
+    <div class="field">
+      <span class="field-label">Beschreibung:</span>
+      <span class="field-value"><em>"${check.description}"</em></span>
+    </div>` : ''}
+  </div>
+
+  ${check.isAICreated !== undefined ? `
+  <div class="section green">
+    <h3>2️⃣ KI-Erstellung</h3>
+    <div class="field">
+      <span class="field-label">Mit KI erstellt:</span>
+      <span class="badge ${check.isAICreated ? 'no' : 'yes'}">${check.isAICreated ? 'Ja' : 'Nein'}</span>
+    </div>
+    ${check.isAICreated && check.hasHumanCreativity !== undefined ? `
+    <div class="field">
+      <span class="field-label">Menschliche Kreativität:</span>
+      <span class="badge ${check.hasHumanCreativity ? 'yes' : 'no'}">${check.hasHumanCreativity ? 'Ja' : 'Nein'}</span>
+    </div>` : ''}
+  </div>` : ''}
+
+  <div class="section purple">
+    <h3>3️⃣ Woher stammt es?</h3>
+    <div class="field">
+      <span class="field-label">Quelle:</span>
+      <span class="field-value"><strong>${check.sourceType}</strong></span>
+    </div>
+  </div>
+
+  <div class="section yellow">
+    <h3>4️⃣ Ist es gemeinfrei?</h3>
+    <div class="field">
+      <span class="field-label">Gemeinfrei:</span>
+      <span class="badge ${check.isPublicDomain ? 'yes' : 'no'}">${check.isPublicDomain ? 'Ja' : 'Nein'}</span>
+    </div>
+  </div>
+
+  ${!check.isPublicDomain ? `
+  <div class="section orange">
+    <h3>5️⃣ Creative Commons?</h3>
+    <div class="field">
+      <span class="field-label">CC-lizenziert:</span>
+      <span class="badge ${check.hasCCLicense ? 'yes' : 'no'}">${check.hasCCLicense ? 'Ja' : 'Nein'}</span>
+    </div>
+    ${check.hasCCLicense ? `
+    <div class="field">
+      <span class="field-label">Lizenz:</span>
+      <span class="field-value"><strong style="color: #3b82f6; font-size: 16px;">${check.ccLicense}</strong></span>
+    </div>` : ''}
+  </div>` : ''}
+
+  <div class="section red">
+    <h3>7️⃣ Wie wird es genutzt?</h3>
+    <div class="field">
+      <span class="field-label">Nutzungsart:</span>
+      <span class="field-value"><strong>${check.usageType}</strong></span>
+    </div>
+    ${check.usageContext ? `
+    <div class="field">
+      <span class="field-label">Kontext:</span>
+      <span class="field-value">${check.usageContext}</span>
+    </div>` : ''}
+    <div class="field">
+      <span class="field-label">Öffentlich:</span>
+      <span class="field-value">${check.isPublic ? 'Ja' : 'Nein'}</span>
+    </div>
+    <div class="field">
+      <span class="field-label">Kommerziell:</span>
+      <span class="field-value">${check.isCommercial ? 'Ja' : 'Nein'}</span>
+    </div>
+    ${check.hasLicense !== undefined ? `
+    <div class="field">
+      <span class="field-label">Lizenz vorhanden:</span>
+      <span class="field-value">${check.hasLicense ? 'Ja' : 'Nein'}</span>
+    </div>` : ''}
+  </div>
+
+  ${check.result.allowedUses && check.result.allowedUses.length > 0 ? `
+  <div class="section green">
+    <h3>✅ Erlaubte Nutzungen:</h3>
+    <ul class="list">
+      ${check.result.allowedUses.map((use: string) => `<li class="list-item">${use}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  ${check.result.restrictedUses && check.result.restrictedUses.length > 0 ? `
+  <div class="section yellow">
+    <h3>⚠️ Eingeschränkte Nutzungen:</h3>
+    <ul class="list">
+      ${check.result.restrictedUses.map((use: string) => `<li class="list-item">${use}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  ${check.result.forbiddenUses && check.result.forbiddenUses.length > 0 ? `
+  <div class="section red">
+    <h3>❌ Verbotene Nutzungen:</h3>
+    <ul class="list">
+      ${check.result.forbiddenUses.map((use: string) => `<li class="list-item">${use}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  ${check.result.recommendations && check.result.recommendations.length > 0 ? `
+  <div class="section blue">
+    <h3>💡 Empfehlungen:</h3>
+    <ul class="list">
+      ${check.result.recommendations.map((rec: string) => `<li class="list-item">${rec}</li>`).join('')}
+    </ul>
+  </div>` : ''}
+
+  <div class="footer">
+    <p><strong>ECRC42</strong> - Urheberrechts-Abklärung für Bildungseinrichtungen</p>
+    <p>Hochschule Luzern | erstellt mit ecrc42.vercel.app</p>
+  </div>
+</body>
+</html>
+    `.trim()
   }
 
   const calculateResult = () => {
@@ -647,7 +929,7 @@ export default function CopyrightCheck() {
               previousChecks.map((check) => (
                 <div key={check.id} className="card">
                   <div className="flex items-start justify-between mb-4">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-bold text-lg">{check.mediaType}</h3>
                       <p className="text-sm text-gray-600">{check.description}</p>
                       <p className="text-xs text-gray-500 mt-1">
@@ -668,10 +950,33 @@ export default function CopyrightCheck() {
                     )}
                   </div>
                   {check.result && (
-                    <div className="text-sm">
+                    <div className="text-sm mb-4">
                       <p className="text-gray-700">{check.result.message}</p>
                     </div>
                   )}
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+                    <button
+                      onClick={() => router.push(`/copyright-check/result?id=${check.id}`)}
+                      className="btn-secondary text-sm py-2 px-4"
+                    >
+                      Details ansehen
+                    </button>
+                    <button
+                      onClick={() => handleDownloadCheck(check)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 px-4 rounded-lg font-bold transition-colors"
+                    >
+                      <Download className="w-4 h-4 inline mr-1" />
+                      HTML/PDF
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCheck(check.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white text-sm py-2 px-4 rounded-lg font-bold transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4 inline mr-1" />
+                      Löschen
+                    </button>
+                  </div>
                 </div>
               ))
             )}
