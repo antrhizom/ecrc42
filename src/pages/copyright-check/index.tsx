@@ -141,7 +141,7 @@ export default function CopyrightCheck() {
             setUsageType(data.usageType || '')
             setIsPublicDomain(data.isPublicDomain ?? null)
             setHasCCLicense(data.hasCCLicense ?? null)
-            setCcLicense(data.ccLicense || '')
+            setCCLicense(data.ccLicense || '')
             setIsPublic(data.isPublic ?? null)
             setUsageContext(data.usageContext || '')
             setHasLicense(data.hasLicense ?? null)
