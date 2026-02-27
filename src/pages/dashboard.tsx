@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
-import { CheckCircle2, FileCheck, BookOpen, Award, LogOut, TrendingUp, Download, Eye } from 'lucide-react'
+import { CheckCircle2, FileCheck, BookOpen, Award, LogOut, TrendingUp, Download, Eye, Users } from 'lucide-react'
 
 interface UserData {
   lernname: string
@@ -14,6 +14,14 @@ interface UserData {
     generatedLicenses: number
     generatedCertificates: number
   }
+}
+
+interface AllStats {
+  checkedProducts: number
+  generatedLicenses: number
+  taggedCases: number
+  generatedCertificates: number
+  totalUsers: number
 }
 
 interface CheckedProduct {
@@ -47,10 +55,18 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [checks, setChecks] = useState<CheckedProduct[]>([])
   const [selectedCheck, setSelectedCheck] = useState<CheckedProduct | null>(null)
+  const [allStats, setAllStats] = useState<AllStats>({
+    checkedProducts: 0,
+    generatedLicenses: 0,
+    taggedCases: 0,
+    generatedCertificates: 0,
+    totalUsers: 0
+  })
 
   useEffect(() => {
     loadUserData()
     loadChecks()
+    loadAllStats()
   }, [])
 
   const loadUserData = async () => {
@@ -68,6 +84,30 @@ export default function Dashboard() {
       console.error('Error loading user data:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAllStats = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'users'))
+      const totals: AllStats = {
+        checkedProducts: 0,
+        generatedLicenses: 0,
+        taggedCases: 0,
+        generatedCertificates: 0,
+        totalUsers: snapshot.size
+      }
+      snapshot.docs.forEach(d => {
+        const data = d.data()
+        const activity = data.activity || {}
+        totals.checkedProducts += activity.checkedProducts || 0
+        totals.generatedLicenses += activity.generatedLicenses || 0
+        totals.taggedCases += activity.taggedCases || 0
+        totals.generatedCertificates += activity.generatedCertificates || 0
+      })
+      setAllStats(totals)
+    } catch (err) {
+      console.error('Error loading all stats:', err)
     }
   }
 
@@ -143,7 +183,7 @@ export default function Dashboard() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Urheberrechts-Abklärung ECRC42</title>
   <style>
-    @page { 
+    @page {
       margin: 2cm;
       size: A4;
     }
@@ -236,13 +276,13 @@ export default function Dashboard() {
       font-weight: 700;
       margin-left: 10px;
     }
-    .badge.yes { 
-      background: #dcfce7; 
+    .badge.yes {
+      background: #dcfce7;
       color: #15803d;
       border: 2px solid #22c55e;
     }
-    .badge.no { 
-      background: #fee2e2; 
+    .badge.no {
+      background: #fee2e2;
       color: #991b1b;
       border: 2px solid #ef4444;
     }
@@ -325,11 +365,11 @@ export default function Dashboard() {
       font-size: 14px;
     }
     @media print {
-      body { 
+      body {
         padding: 0;
         max-width: 100%;
       }
-      .step { 
+      .step {
         page-break-inside: avoid;
       }
       .result {
@@ -525,19 +565,23 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        
-        {/* ECRC Statistiken */}
+
+        {/* ECRC Statistiken – alle Nutzer*innen */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4 flex items-center">
+          <h2 className="text-xl font-bold mb-1 flex items-center">
             <TrendingUp className="w-6 h-6 mr-2 text-ecrc-blue" />
             ECRC Nutzer*innen-Statistik
           </h2>
+          <p className="text-sm text-gray-500 mb-4 flex items-center">
+            <Users className="w-4 h-4 mr-1" />
+            {allStats.totalUsers} Nutzer*innen insgesamt
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="card bg-gradient-to-br from-ecrc-blue to-blue-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">Urheberrechts-Abklärungen</p>
-                  <p className="text-3xl font-bold">{userData?.activity.checkedProducts || 0}</p>
+                  <p className="text-3xl font-bold">{allStats.checkedProducts}</p>
                 </div>
                 <FileCheck className="w-12 h-12 opacity-30" />
               </div>
@@ -547,7 +591,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">CC-Abklärungen</p>
-                  <p className="text-3xl font-bold">{userData?.activity.generatedLicenses || 0}</p>
+                  <p className="text-3xl font-bold">{allStats.generatedLicenses}</p>
                 </div>
                 <FileCheck className="w-12 h-12 opacity-30" />
               </div>
@@ -557,7 +601,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">Fallbeispiele aufgeführt</p>
-                  <p className="text-3xl font-bold">{userData?.activity.taggedCases || 0}</p>
+                  <p className="text-3xl font-bold">{allStats.taggedCases}</p>
                 </div>
                 <BookOpen className="w-12 h-12 opacity-30" />
               </div>
@@ -567,7 +611,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm opacity-90">Aktivitätsberichte erstellt</p>
-                  <p className="text-3xl font-bold">{userData?.activity.generatedCertificates || 0}</p>
+                  <p className="text-3xl font-bold">{allStats.generatedCertificates}</p>
                 </div>
                 <Award className="w-12 h-12 opacity-30" />
               </div>
@@ -575,7 +619,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Gesamtübersicht */}
+        {/* Gesamtübersicht – eigene Stats */}
         <div className="card mb-8 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-ecrc-blue">
           <h3 className="font-bold mb-4 text-lg flex items-center">
             <TrendingUp className="w-5 h-5 mr-2" />
@@ -633,7 +677,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                       </div>
-                      
+
                       {check.description && (
                         <p className="text-gray-700 mb-3">{check.description}</p>
                       )}
@@ -655,7 +699,7 @@ export default function Dashboard() {
 
                       {/* Ergebnis */}
                       <div className={`p-3 rounded-lg ${
-                        check.result.allowed 
+                        check.result.allowed
                           ? 'bg-green-50 border-l-4 border-green-500'
                           : 'bg-red-50 border-l-4 border-red-500'
                       }`}>
@@ -798,7 +842,7 @@ export default function Dashboard() {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-600">Mit KI erstellt:</span>
                         <span className={`font-bold px-3 py-1 rounded-full ${
-                          selectedCheck.isAICreated 
+                          selectedCheck.isAICreated
                             ? 'bg-orange-100 text-orange-700'
                             : 'bg-green-100 text-green-700'
                         }`}>
@@ -906,7 +950,7 @@ export default function Dashboard() {
 
                 {/* Ergebnis */}
                 <div className={`p-6 rounded-xl border-4 ${
-                  selectedCheck.result.allowed 
+                  selectedCheck.result.allowed
                     ? 'bg-green-50 border-green-500'
                     : 'bg-red-50 border-red-500'
                 }`}>
