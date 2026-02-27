@@ -89,23 +89,19 @@ export default function Dashboard() {
 
   const loadAllStats = async () => {
     try {
-      const snapshot = await getDocs(collection(db, 'users'))
-      const totals: AllStats = {
-        checkedProducts: 0,
-        generatedLicenses: 0,
-        taggedCases: 0,
+      const [usersSnap, checksSnap, licensesSnap, casesSnap] = await Promise.all([
+        getDocs(collection(db, 'users')),
+        getDocs(collection(db, 'checked_products')),
+        getDocs(collection(db, 'generated_licenses')),
+        getDocs(collection(db, 'case_examples')),
+      ])
+      setAllStats({
+        checkedProducts: checksSnap.size,
+        generatedLicenses: licensesSnap.size,
+        taggedCases: casesSnap.size,
         generatedCertificates: 0,
-        totalUsers: snapshot.size
-      }
-      snapshot.docs.forEach(d => {
-        const data = d.data()
-        const activity = data.activity || {}
-        totals.checkedProducts += activity.checkedProducts || 0
-        totals.generatedLicenses += activity.generatedLicenses || 0
-        totals.taggedCases += activity.taggedCases || 0
-        totals.generatedCertificates += activity.generatedCertificates || 0
+        totalUsers: usersSnap.size
       })
-      setAllStats(totals)
     } catch (err) {
       console.error('Error loading all stats:', err)
     }
@@ -610,10 +606,10 @@ export default function Dashboard() {
             <div className="card bg-gradient-to-br from-orange-500 to-orange-600 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm opacity-90">Aktivitätsberichte erstellt</p>
-                  <p className="text-3xl font-bold">{allStats.generatedCertificates}</p>
+                  <p className="text-sm opacity-90">Registrierte Nutzer*innen</p>
+                  <p className="text-3xl font-bold">{allStats.totalUsers}</p>
                 </div>
-                <Award className="w-12 h-12 opacity-30" />
+                <Users className="w-12 h-12 opacity-30" />
               </div>
             </div>
           </div>
